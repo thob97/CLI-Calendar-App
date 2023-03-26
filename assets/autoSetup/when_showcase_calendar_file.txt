@@ -1,0 +1,11 @@
+2000 4 13, bachelor thesis abgabe/appointment
+((w=mon & d=27) | d=25), 10:00 every monday
+w=fri, 10:00-12:30 every friday: if two times are specified the app even displays them accordingly
+
+#(2023 3 23) | (2023 3 24), -> error
+#2023 3 23 | 2023 3 24, -> error
+#-> fixed date do not support combinations
+#(2023 3 23) , -> error
+#-> fixed days do not like parenthesis
+
+#2023 3 32 , -> error - but w=8 doesent throw error!

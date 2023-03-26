@@ -1,0 +1,15 @@
+stages:
+  - lint
+
+flutter_analyze:
+  image: cirrusci/flutter:3.7.3
+  stage: lint
+  script:
+    - flutter pub get #get packages
+    - flutter analyze --pub #exit on linter error
+    - flutter format -l 80 -n . --set-exit-if-changed #exit on format error
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - lib/**/*

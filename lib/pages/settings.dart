@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cli_calendar_app/persistent_data.dart';
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -14,11 +15,26 @@ class SettingsPage extends StatelessWidget {
   final String configPath;
   final String repoPath;
 
-  Future<bool> mockedLogin(String login) {
+  ///-----FUNCTIONS-----
+  Future<bool> mockedLogin(String login) async {
+    await saveTokenToPersistentStorage(login);
     return Future.delayed(const Duration(seconds: 1))
         .then((value) => Random().nextBool());
   }
 
+  Future<bool> mockedRepo(String repoPath) async {
+    await saveRepoPathToPersistentStorage(repoPath);
+    return Future.delayed(const Duration(seconds: 1))
+        .then((value) => Random().nextBool());
+  }
+
+  Future<bool> mockedConfig(String configPath) async {
+    await saveConfigPathToPersistentStorage(configPath);
+    return Future.delayed(const Duration(seconds: 1))
+        .then((value) => Random().nextBool());
+  }
+
+  ///-----PAGE-----
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,6 +55,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  ///-----BODY-----
   Widget body(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -51,9 +68,9 @@ class SettingsPage extends StatelessWidget {
   }
 
   ///-----WIDGETS-----
+  //
   final loginFormKey = GlobalKey<FormState>();
   ValueNotifier<bool> isLoggedIn = ValueNotifier(false);
-
   Widget loginTextField() {
     return CustomFutureTextFormField(
       formKey: loginFormKey,
@@ -63,15 +80,15 @@ class SettingsPage extends StatelessWidget {
       hintText: 'hintText',
       labelText: 'labelText',
       prefixIcon: Icons.person,
-      initialValue: 'test3',
+      initialValue: token,
       getFutureValidation: mockedLogin,
       enabled: true,
       onSubmit: (success) => isLoggedIn.value = success,
     );
   }
 
+  //
   final repoFormKey = GlobalKey<FormState>();
-
   Widget repoTextField() {
     return ValueListenableBuilder(
       valueListenable: isLoggedIn,
@@ -84,8 +101,8 @@ class SettingsPage extends StatelessWidget {
           hintText: 'hintText',
           labelText: 'labelText',
           prefixIcon: Icons.home,
-          initialValue: 'test2',
-          getFutureValidation: mockedLogin,
+          initialValue: repoPath,
+          getFutureValidation: mockedRepo,
           enabled: notifierValue,
           onSubmit: (success) => repoPathIsValid.value = success,
         );
@@ -93,9 +110,9 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  //
   final configFormKey = GlobalKey<FormState>();
   ValueNotifier<bool> repoPathIsValid = ValueNotifier(false);
-
   Widget configTextField() {
     return ValueListenableBuilder(
       valueListenable: repoPathIsValid,
@@ -108,8 +125,8 @@ class SettingsPage extends StatelessWidget {
           hintText: 'hintText',
           labelText: 'labelText',
           prefixIcon: Icons.settings,
-          initialValue: 'test',
-          getFutureValidation: mockedLogin,
+          initialValue: configPath,
+          getFutureValidation: mockedConfig,
           enabled: notifierValue,
           onSubmit: (_) {},
         );
@@ -118,10 +135,11 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-///
-///
-///
-///
+//
+//
+//
+//
+//
 ///-----Textfield-----
 class CustomFutureTextFormField extends StatefulWidget {
   const CustomFutureTextFormField({
@@ -242,6 +260,8 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
   //
   //
   //todo: ab hier: refactor-> (isRetry style und getter überdenken)
+  //todo: remember last state -> don't isRetry() on every new device start
+  //todo: add retry on upswipe
   void afterBuild(bool? validation) {
     ///at the end of build
     WidgetsBinding.instance.addPostFrameCallback((_) {

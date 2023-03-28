@@ -37,7 +37,7 @@ dependencies:
   github: ^9.7.0 #github api
   json_annotation: ^4.7.0 #for json_serializable
   collection: ^1.17.0 #for tests: compare lists
-
+  shared_preferences: ^2.0.20 #to locally save variables persistent on device
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2

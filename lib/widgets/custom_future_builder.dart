@@ -7,8 +7,8 @@ class CustomFutureBuilder extends StatelessWidget {
     this.errorMsg,
   });
 
-  final Future<dynamic> futureData;
-  final Widget Function(Object) builder;
+  final Future<dynamic>? futureData;
+  final Widget Function(Object?) builder;
   final String? errorMsg;
 
   @override
@@ -20,9 +20,9 @@ class CustomFutureBuilder extends StatelessWidget {
           case ConnectionState.waiting:
             return const _WaitingWidget();
           default:
-            return snapshot.hasError || snapshot.data == null
+            return snapshot.hasError
                 ? _ErrorWidget(errorMsg)
-                : builder(snapshot.data! as Object);
+                : builder(snapshot.data);
         }
       },
     );

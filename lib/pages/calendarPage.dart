@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:cli_calendar_app/database/github_connection.dart';
+import 'package:cli_calendar_app/database/database_strategy.dart';
+import 'package:cli_calendar_app/database/model/config.dart';
 import 'package:cli_calendar_app/main.dart';
 import 'package:cli_calendar_app/model/calendar_appointment.dart';
 import 'package:cli_calendar_app/parser/when_parser.dart';
@@ -13,8 +14,10 @@ class CalendarPage extends StatefulWidget {
     super.key,
     required this.calenderViewController,
     required this.pageStateNotifier,
+    required this.database,
   });
 
+  final DatabaseStrategy database;
   final ValueNotifier<PageState> pageStateNotifier;
   final CalendarController calenderViewController;
 
@@ -22,15 +25,55 @@ class CalendarPage extends StatefulWidget {
   State<CalendarPage> createState() => _CalendarPageState();
 }
 
+//todo - try to remove stateful widget?
 class _CalendarPageState extends State<CalendarPage> {
   late final Future<File?> futureDatabaseCalendarFile;
 
+  ///-----init-----
+  void initCalendarFile() {
+    //if initialized -> fetch calendar file
+    if (widget.database.isInitialized()) {
+      futureDatabaseCalendarFile = widget.database.fetchCalendarFile();
+    } else {
+      futureDatabaseCalendarFile = Future(() => null);
+    }
+  }
+
+  late final DateTime showEntriesFrom;
+  late final DateTime showEntriesUntil;
+
+  void initConfig() {
+    //if config available
+    if (widget.database.isInitialized()) {
+      //calculate dates
+      final Config config = widget.database.getConfig();
+      final DateTime now = DateTime.now();
+      showEntriesFrom = DateTime(
+        now.year,
+        now.month - config.lookBackMonthsBeforeRecalculatingCalendarFile_min0,
+        now.day,
+      );
+      showEntriesUntil = DateTime(
+        now.year,
+        now.month + config.lookAheadMonthsBeforeRecalculatingCalendarFile_min1,
+        now.day,
+      );
+    }
+    //show no dates
+    else {
+      showEntriesFrom = DateTime.now();
+      showEntriesUntil = showEntriesFrom;
+    }
+  }
+
   @override
   void initState() {
-    futureDatabaseCalendarFile = _tempDatabaseTest();
+    initCalendarFile();
+    initConfig();
     super.initState();
   }
 
+  ///-----BUILD-PAGE-----
   @override
   Widget build(BuildContext context) {
     return _buildFuture();
@@ -56,10 +99,11 @@ class _CalendarPageState extends State<CalendarPage> {
             ? []
             : WhenParser().convertToCalendarAppointment(
                 calendarFile,
-                DateTime(2022),
-                DateTime(2024),
+                showEntriesFrom,
+                showEntriesUntil,
               ),
       ),
+      //todo: maybe change styling
       //onViewChanged: _onViewChanged, //todo don't allow blue border
       cellBorderColor: Colors.transparent,
       //loadMoreWidgetBuilder: , //todo load max 3 pages
@@ -83,13 +127,6 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 
-  Future<File?> _tempDatabaseTest() async {
-    final Database github = Database();
-    await github.login('');
-    await github.autoSetup();
-    return github.fetchCalendarFile();
-  }
-
   //todo: updating border not functioning?
   void _upDateBorder(ViewChangedDetails details) {
     if (widget.calenderViewController.view == CalendarView.day) {
@@ -99,8 +136,3 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 }
-//
-//
-//
-//
-//

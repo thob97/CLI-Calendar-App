@@ -37,22 +37,7 @@ class SettingsPage extends StatelessWidget {
   ///-----PAGE-----
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Settings")),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month),
-            label: "Today",
-          ),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.list_alt), label: "Todolist"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings")
-        ],
-        currentIndex: 2,
-      ),
-      body: body(context),
-    );
+    return body(context);
   }
 
   ///-----BODY-----

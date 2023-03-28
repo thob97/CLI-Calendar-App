@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  syncfusion_flutter_calendar: ^20.4.53 #calendar
   intl: ^0.18.0 #for DateFormat
   http: ^0.13.5 #for downloading url files
   path_provider: ^2.0.13 #to get a temporary directory

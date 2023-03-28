@@ -1,7 +1,9 @@
+import 'package:cli_calendar_app/database/database_strategy.dart';
+import 'package:cli_calendar_app/database/mocked_database.dart';
 import 'package:cli_calendar_app/pages/calendarPage.dart';
 import 'package:cli_calendar_app/pages/settings.dart';
 import 'package:cli_calendar_app/pages/todoListPage.dart';
-import 'package:cli_calendar_app/persistent_data.dart';
+import 'package:cli_calendar_app/persistent_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
@@ -16,24 +18,32 @@ enum PageState {
 Future<void> main() async {
   //to ensure everything before MyApp is initialized/runnable
   WidgetsFlutterBinding.ensureInitialized();
-  final String configPath = await readConfigPathFromPersistentStorage() ?? '';
-  final String repoPath = await readRepoPathFromPersistentStorage() ?? '';
-  final String token = await readTokenFromPersistentStorage() ?? '';
-  runApp(MyApp(token: token, configPath: configPath, repoPath: repoPath));
+
+  ///load data from persistent storage
+  final PersistentStorage storage = await PersistentStorage().init();
+  final String? token = storage.getToken();
+  final String? repoPath = storage.getRepoPath();
+  final String? configPath = storage.getConfigPath();
+
+  ///init database
+  final DatabaseStrategy database = MockedDatabase();
+  if (token != null && repoPath != null && configPath != null) {
+    database.init(token: token, repoName: repoPath, dbConfigPath: configPath);
+  }
+
+  ///runApp
+  runApp(MyApp(database: database, storage: storage));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({
     super.key,
-    required this.token,
-    required this.configPath,
-    required this.repoPath,
+    required this.database,
+    required this.storage,
   });
 
-  ///todo remove variables - instead use path provider
-  final String token;
-  final String configPath;
-  final String repoPath;
+  final DatabaseStrategy database;
+  final PersistentStorage storage;
 
   ///-----VARIABLES-----
   static const PageState startPage = PageState.settings;
@@ -66,33 +76,30 @@ class MyApp extends StatelessWidget {
   }
 
   ///-----getPage-----
-  Widget getPage(
-    CalendarController calenderViewController,
-    ValueNotifier<PageState> pageStateNotifier,
-  ) {
+  Widget getPage(CalendarController calenderViewController,
+      ValueNotifier<PageState> pageStateNotifier,) {
     return ValueListenableBuilder(
       valueListenable: pageStateNotifier,
       builder: (_, __, ___) {
         switch (pageStateNotifier.value) {
-          ///CalendarPage
+        ///CalendarPage
           case PageState.calendarDay:
           case PageState.calendarMonth:
             return CalendarPage(
               calenderViewController: calenderViewController,
               pageStateNotifier: pageStateNotifier,
+              database: database,
             );
 
-          ///CalendarSettings
+        ///CalendarSettings
           case PageState.todoView:
           case PageState.todoNew:
-            return const TodoListPage();
+            return TodoListPage(database: database);
 
-          ///CalendarSettings
+        ///CalendarSettings
           case PageState.settings:
             return SettingsPage(
-              token: token,
-              configPath: configPath,
-              repoPath: repoPath,
+              database: database, storage: storage,
             );
         }
       },
@@ -229,10 +236,10 @@ class ListeningBotNavBar extends StatelessWidget {
 
   void _onTabNavigate(int index) {
     switch (index) {
-      ///CalendarView
+    ///CalendarView
       case 0:
 
-        ///if already in calendar view -> don't reload -> just update view to date:now
+      ///if already in calendar view -> don't reload -> just update view to date:now
         if (pageStateNotifier.value == PageState.calendarDay ||
             pageStateNotifier.value == PageState.calendarMonth) {
           //changes to month view
@@ -250,17 +257,17 @@ class ListeningBotNavBar extends StatelessWidget {
         }
         break;
 
-      ///TodoListView
+    ///TodoListView
       case 1:
         pageStateNotifier.value = PageState.todoView;
         break;
 
-      ///SettingsView
+    ///SettingsView
       case 2:
         pageStateNotifier.value = PageState.settings;
         break;
 
-      ///none
+    ///none
       default:
         break;
     }

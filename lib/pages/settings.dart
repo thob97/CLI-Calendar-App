@@ -1,47 +1,32 @@
-import 'dart:math';
-
-import 'package:cli_calendar_app/persistent_data.dart';
+import 'package:cli_calendar_app/database/database_strategy.dart';
+import 'package:cli_calendar_app/persistent_storage.dart';
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatelessWidget {
-  SettingsPage({
-    super.key,
-    required this.token,
-    required this.configPath,
-    required this.repoPath,
-  });
+  SettingsPage({super.key, required this.database, required this.storage});
 
-  final String token;
-  final String configPath;
-  final String repoPath;
+  final PersistentStorage storage;
+  final DatabaseStrategy database;
 
   ///-----FUNCTIONS-----
-  Future<bool> mockedLogin(String login) async {
-    await saveTokenToPersistentStorage(login);
-    return Future.delayed(const Duration(seconds: 1))
-        .then((value) => Random().nextBool());
+  Future<bool> login(String login) async {
+    await storage.saveToken(login);
+    return await database.login(login) != null;
   }
 
-  Future<bool> mockedRepo(String repoPath) async {
-    await saveRepoPathToPersistentStorage(repoPath);
-    return Future.delayed(const Duration(seconds: 1))
-        .then((value) => Random().nextBool());
+  Future<bool> setRepo(String repoName) async {
+    await storage.saveRepoPath(repoName);
+    return database.setRepo(repoName: repoName);
   }
 
-  Future<bool> mockedConfig(String configPath) async {
-    await saveConfigPathToPersistentStorage(configPath);
-    return Future.delayed(const Duration(seconds: 1))
-        .then((value) => Random().nextBool());
+  Future<bool> setConfig(String dbConfigPath) async {
+    await storage.saveConfigPath(dbConfigPath);
+    return database.setConfig(dbConfigPath: dbConfigPath);
   }
 
   ///-----PAGE-----
   @override
   Widget build(BuildContext context) {
-    return body(context);
-  }
-
-  ///-----BODY-----
-  Widget body(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -53,9 +38,11 @@ class SettingsPage extends StatelessWidget {
   }
 
   ///-----WIDGETS-----
-  //
+  //key for getting the input of the text-field
+  //notifier to notify the other text-field listeners
   final loginFormKey = GlobalKey<FormState>();
-  ValueNotifier<bool> isLoggedIn = ValueNotifier(false);
+  final ValueNotifier<bool> isLoggedIn = ValueNotifier(false);
+
   Widget loginTextField() {
     return CustomFutureTextFormField(
       formKey: loginFormKey,
@@ -65,15 +52,18 @@ class SettingsPage extends StatelessWidget {
       hintText: 'hintText',
       labelText: 'labelText',
       prefixIcon: Icons.person,
-      initialValue: token,
-      getFutureValidation: mockedLogin,
+      initialValue: storage.getToken(),
+      getFutureValidation: login,
       enabled: true,
       onSubmit: (success) => isLoggedIn.value = success,
     );
   }
 
-  //
+  //key for getting the input of the text-field
+  //notifier to notify the other text-field listeners
   final repoFormKey = GlobalKey<FormState>();
+  final ValueNotifier<bool> repoPathIsValid = ValueNotifier(false);
+
   Widget repoTextField() {
     return ValueListenableBuilder(
       valueListenable: isLoggedIn,
@@ -86,8 +76,8 @@ class SettingsPage extends StatelessWidget {
           hintText: 'hintText',
           labelText: 'labelText',
           prefixIcon: Icons.home,
-          initialValue: repoPath,
-          getFutureValidation: mockedRepo,
+          initialValue: storage.getRepoPath(),
+          getFutureValidation: setRepo,
           enabled: notifierValue,
           onSubmit: (success) => repoPathIsValid.value = success,
         );
@@ -95,9 +85,8 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  //
+  //key for getting the input of the text-field
   final configFormKey = GlobalKey<FormState>();
-  ValueNotifier<bool> repoPathIsValid = ValueNotifier(false);
   Widget configTextField() {
     return ValueListenableBuilder(
       valueListenable: repoPathIsValid,
@@ -110,8 +99,8 @@ class SettingsPage extends StatelessWidget {
           hintText: 'hintText',
           labelText: 'labelText',
           prefixIcon: Icons.settings,
-          initialValue: configPath,
-          getFutureValidation: mockedConfig,
+          initialValue: storage.getConfigPath(),
+          getFutureValidation: setConfig,
           enabled: notifierValue,
           onSubmit: (_) {},
         );
@@ -247,6 +236,7 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
   //todo: ab hier: refactor-> (isRetry style und getter überdenken)
   //todo: remember last state -> don't isRetry() on every new device start
   //todo: add retry on upswipe
+  //todo: dont validate empty input
   void afterBuild(bool? validation) {
     ///at the end of build
     WidgetsBinding.instance.addPostFrameCallback((_) {

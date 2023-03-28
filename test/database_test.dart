@@ -643,7 +643,7 @@ void main() {
           () {
         test('get issues', () async {
           //
-          final List<Todo>? todos = await db.getNumOpenIssues();
+          final List<Todo>? todos = await db.getNumOpenIssues(10);
           expect(todos != null, true);
 
           //compare just uploaded issues

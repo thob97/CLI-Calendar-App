@@ -11,29 +11,39 @@ class SettingsPage extends StatelessWidget {
   ///-----FUNCTIONS-----
   Future<bool> login(String login) async {
     await storage.saveToken(login);
-    return await database.login(login) != null;
+    final bool success = await database.login(login) != null;
+    await storage.saveLoginState(success: success);
+    return success;
   }
 
   Future<bool> setRepo(String repoName) async {
     await storage.saveRepoPath(repoName);
-    return database.setRepo(repoName: repoName);
+    final bool success = await database.setRepo(repoName: repoName);
+    await storage.saveRepoState(success: success);
+    return success;
   }
 
   Future<bool> setConfig(String dbConfigPath) async {
     await storage.saveConfigPath(dbConfigPath);
-    return database.setConfig(dbConfigPath: dbConfigPath);
+    final bool success = await database.setConfig(dbConfigPath: dbConfigPath);
+    await storage.saveConfigState(success: success);
+    return success;
   }
 
   ///-----PAGE-----
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        loginTextField(),
-        repoTextField(),
-        configTextField(),
-      ],
+    return RefreshIndicator(
+      //todo add refresh
+      onRefresh: () => Future(() => null),
+      child: ListView(
+        children: [
+          loginTextField(),
+          repoTextField(),
+          configTextField(),
+          //todo add username + api + time
+        ],
+      ),
     );
   }
 
@@ -42,20 +52,20 @@ class SettingsPage extends StatelessWidget {
   //notifier to notify the other text-field listeners
   final loginFormKey = GlobalKey<FormState>();
   final ValueNotifier<bool> isLoggedIn = ValueNotifier(false);
-
   Widget loginTextField() {
+    //set initial success state (when opening settings will display init value)
+    isLoggedIn.value = storage.getLoginState() ?? false;
     return CustomFutureTextFormField(
       formKey: loginFormKey,
-      validationSuccessText: 'successText',
       validationErrorText: 'errorText',
-      validationIsRetryText: '',
       hintText: 'hintText',
       labelText: 'labelText',
       prefixIcon: Icons.person,
-      initialValue: storage.getToken(),
+      initialText: storage.getToken(),
       getFutureValidation: login,
       enabled: true,
       onSubmit: (success) => isLoggedIn.value = success,
+      initialState: isLoggedIn.value,
     );
   }
 
@@ -63,23 +73,23 @@ class SettingsPage extends StatelessWidget {
   //notifier to notify the other text-field listeners
   final repoFormKey = GlobalKey<FormState>();
   final ValueNotifier<bool> repoPathIsValid = ValueNotifier(false);
-
   Widget repoTextField() {
+    //set initial success state (when opening settings will display init value)
+    repoPathIsValid.value = storage.getRepoState() ?? false;
     return ValueListenableBuilder(
       valueListenable: isLoggedIn,
-      builder: (BuildContext context, bool notifierValue, Widget? child) {
+      builder: (_, bool notifierValue, ___) {
         return CustomFutureTextFormField(
           formKey: repoFormKey,
-          validationSuccessText: 'successText',
           validationErrorText: 'errorText',
-          validationIsRetryText: 'login changed, please retry repo',
           hintText: 'hintText',
           labelText: 'labelText',
           prefixIcon: Icons.home,
-          initialValue: storage.getRepoPath(),
+          initialText: storage.getRepoPath(),
           getFutureValidation: setRepo,
-          enabled: notifierValue,
           onSubmit: (success) => repoPathIsValid.value = success,
+          initialState: repoPathIsValid.value,
+          enabled: notifierValue,
         );
       },
     );
@@ -90,19 +100,18 @@ class SettingsPage extends StatelessWidget {
   Widget configTextField() {
     return ValueListenableBuilder(
       valueListenable: repoPathIsValid,
-      builder: (BuildContext context, bool notifierValue, Widget? child) {
+      builder: (_, bool notifierValue, ___) {
         return CustomFutureTextFormField(
           formKey: configFormKey,
-          validationSuccessText: 'successText',
           validationErrorText: 'errorText',
-          validationIsRetryText: 'repo changed, please retry config',
           hintText: 'hintText',
           labelText: 'labelText',
           prefixIcon: Icons.settings,
-          initialValue: storage.getConfigPath(),
+          initialText: storage.getConfigPath(),
           getFutureValidation: setConfig,
-          enabled: notifierValue,
           onSubmit: (_) {},
+          initialState: storage.getConfigState() ?? false,
+          enabled: notifierValue,
         );
       },
     );
@@ -118,27 +127,25 @@ class SettingsPage extends StatelessWidget {
 class CustomFutureTextFormField extends StatefulWidget {
   const CustomFutureTextFormField({
     required this.formKey,
-    required this.initialValue,
+    required this.initialText,
     required this.hintText,
     required this.labelText,
-    required this.enabled,
     required this.prefixIcon,
-    required this.validationSuccessText,
     required this.validationErrorText,
-    required this.validationIsRetryText,
     required this.getFutureValidation,
     required this.onSubmit,
+    required this.initialState,
+    required this.enabled,
   });
 
   final GlobalKey<FormState> formKey;
-  final bool enabled;
-  final String validationSuccessText;
   final String validationErrorText;
-  final String validationIsRetryText;
   final String hintText;
+  final bool enabled;
   final String labelText;
   final IconData prefixIcon;
-  final String? initialValue;
+  final String? initialText;
+  final bool initialState;
   final Future<bool> Function(String) getFutureValidation;
   final void Function(bool) onSubmit;
 
@@ -148,25 +155,20 @@ class CustomFutureTextFormField extends StatefulWidget {
 }
 
 class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
-  late Future<bool?> futureValidation;
+  late Future<bool> futureValidation;
 
+  ///-----INIT-----
   @override
   void initState() {
     ///set userInput to initial value
-    userInput = widget.initialValue;
+    userInput = widget.initialText;
 
     ///initiate future validation
-    if (isDisabled() || userInput == null) {
-      futureValidation = Future.delayed(Duration.zero).then((value) => false);
-    }
-    //try to validate if a initial value is given
-    else {
-      futureValidation = widget.getFutureValidation(userInput!);
-    }
-
+    futureValidation = Future(() => widget.initialState);
     super.initState();
   }
 
+  ///-----BODY-----
   //def: shows the text-field loading while waiting for getFutureValidation
   //return: on success shows the validated text-field
   @override
@@ -187,26 +189,26 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
   }
 
   ///-----WIDGETS-----
+
   Widget customTextField({bool? validation, bool isLoading = false}) {
-    afterBuild(validation);
+    notifyAfterBuildValidation(validation);
     return Form(
       key: widget.formKey,
       child: TextFormField(
-        enabled: widget.enabled,
-        initialValue: widget.initialValue,
+        enabled: !isDisabled() || isLoading,
+        initialValue: widget.initialText,
         textInputAction: TextInputAction.send,
-        validator: (_) =>
-            validator(validated: validation, isLoading: isLoading),
+        validator: (_) => validator(validated: validation),
         autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
           hintText: widget.hintText,
-          //filled: true,
-          //fillColor: validate ? green : red,
+
+          ///filled: true,
+          ///fillColor: validate ? green : red,
           labelText: widget.labelText,
-          prefixIcon: prefixIcon(validated: validation, isLoading: isLoading),
+          prefixIcon: prefixIcon(validated: validation),
           suffixIcon: suffixIcon(validated: validation, isLoading: isLoading),
-          errorStyle:
-              undersideTextStyle(validated: validation, isLoading: isLoading),
+          errorStyle: undersideTextStyle(validated: validation),
         ),
         onFieldSubmitted: onFieldSubmitted,
       ),
@@ -219,136 +221,110 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
       ///update text
       this.userInput = userInput;
 
-      ///fetch new validation
-      //return false on empty input
-      if (userInput.isEmpty) {
-        futureValidation = Future.delayed(Duration.zero).then((value) => false);
-      }
-      //if no empty input => validate
-      else {
-        futureValidation = widget.getFutureValidation(userInput);
-      }
+      ///disable listeners while loading
+      disableListener();
+
+      ///fetch & test new validation
+      futureValidation = widget.getFutureValidation(userInput);
     });
   }
 
-  //
-  //
-  //todo: ab hier: refactor-> (isRetry style und getter überdenken)
-  //todo: remember last state -> don't isRetry() on every new device start
-  //todo: add retry on upswipe
-  //todo: dont validate empty input
-  void afterBuild(bool? validation) {
+  void notifyAfterBuildValidation(bool? validation) {
     ///at the end of build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      bool? success = validation;
-      if (isDisabled() || isRetry()) {
-        success = false;
-      }
-
-      ///run onValidation: if validation updated + its not Retry + its enabled
-      if (success != null) {
-        widget.onSubmit(success);
-      }
-
-      ///update futureValidation on new value
+      ///automatically retry text-field
       if (isRetry()) {
         setState(() {
           futureValidation = widget.getFutureValidation(userInput!);
         });
       }
 
-      ///update prevStateWasDisabled
+      ///if state==success -> activate listener
+      else if (isSuccess(validated: validation)) {
+        print(widget.initialText);
+        activateListener();
+      }
+
+      ///else disable listener
+      else {
+        disableListener();
+      }
+
+      ///update prevStateWasDisabled & isFirstBuild (for isRetry() check)
+      isFirstBuild = false;
       prevStateWasDisabled = isDisabled();
     });
   }
 
   ///-----HELPERS-----
   //states textField can be in
+  bool isFirstBuild = true;
+  bool prevStateWasDisabled = false; //for isRetry()
+  late String? userInput; //for isRetry()
+  //def: automatically retry text-field input
+  //+isLoading
+  bool isRetry() =>
+      !isDisabled() &&
+      prevStateWasDisabled &&
+      userInput != null &&
+      !isFirstBuild;
+
   bool isDisabled() => !widget.enabled;
 
-  bool isActive({required bool? validated}) => validated == null;
+  bool isNotValidated({required bool? validated}) => validated == null;
 
-  bool isSuccess({required bool? validated}) => validated != null && validated;
+  bool isSuccess({required bool? validated}) =>
+      validated != null && validated && !isDisabled() ||
+      (isFirstBuild && widget.initialState);
 
-  bool isError({required bool? validated}) => validated != null && !validated;
+  bool isError({required bool? validated}) =>
+      validated != null && !validated && !isDisabled();
 
-  //+bool isLoading
-  bool prevStateWasDisabled = false;
-  late String? userInput; //for isRetry() test
-  //retry if it was previously disabled, its now enabled, and there is already userInput
-  bool isRetry() => !isDisabled() && prevStateWasDisabled && userInput != null;
+  void disableListener() => widget.onSubmit(false);
 
+  void activateListener() => widget.onSubmit(true);
+
+  //todo change style to iso
   ///-----STYLE-----
   static const Color errorColor = Colors.red;
   static const Color successColor = Colors.green;
-  static const Color isRetryColor = Colors.amber;
 
-  TextStyle? undersideTextStyle({
-    required bool? validated,
-    required bool isLoading,
-  }) {
-    ///no validation
-    if (isDisabled() || isActive(validated: validated) || isLoading) {
-      return null;
-    }
-
-    ///isRetry
-    if (isRetry()) {
-      return const TextStyle(color: isRetryColor);
-    }
-
+  TextStyle? undersideTextStyle({required bool? validated}) {
     ///success
-    else if (isSuccess(validated: validated)) {
+    if (isSuccess(validated: validated)) {
       return const TextStyle(color: successColor);
     }
 
     ///error
-    else {
+    else if (isError(validated: validated)) {
       return const TextStyle(color: errorColor);
-    }
-  }
-
-  String? validator({required bool? validated, required bool isLoading}) {
-    ///no validation
-    //not yet validated (no input tested yet) or is being tested right now
-    if (isDisabled() || isActive(validated: validated) || isLoading) {
+    } else {
       return null;
     }
+  }
 
-    ///isRetry
-    if (isRetry()) {
-      return widget.validationIsRetryText;
-    }
-
-    ///success
-    else if (isSuccess(validated: validated)) {
-      return widget.validationSuccessText;
-    }
-
-    ///error
-    else {
+  String? validator({required bool? validated}) {
+    ///onError
+    if (isError(validated: validated)) {
       return widget.validationErrorText;
+    } else {
+      return null;
     }
   }
 
-  Widget? prefixIcon({required bool? validated, required bool isLoading}) {
-    late final Color? iconColor;
-
-    ///no validation
-    if (isDisabled() || isActive(validated: validated) || isLoading) {
-      iconColor = null;
-    } else if (isRetry()) {
-      iconColor = isRetryColor;
-    }
+  Widget? prefixIcon({required bool? validated}) {
+    Color? iconColor;
 
     ///success
-    else if (isSuccess(validated: validated)) {
+    if (isSuccess(validated: validated)) {
       iconColor = successColor;
     }
 
     ///error
-    else {
+    else if (isError(validated: validated)) {
       iconColor = errorColor;
+    } else {
+      //
     }
     return Icon(widget.prefixIcon, color: iconColor);
   }
@@ -357,16 +333,6 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
     ///loading
     if (isLoading) {
       return const CircularProgressIndicator();
-    }
-
-    ///no validation
-    if (isDisabled() || isActive(validated: validated)) {
-      return null;
-    }
-
-    ///retry
-    else if (isRetry()) {
-      return const Icon(Icons.refresh, color: isRetryColor);
     }
 
     ///success
@@ -378,8 +344,10 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
     }
 
     ///error
-    else {
+    else if (isError(validated: validated)) {
       return const Icon(Icons.close_outlined, color: errorColor);
+    } else {
+      return null;
     }
   }
 }

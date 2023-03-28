@@ -7,6 +7,9 @@ class PersistentStorage {
   late String? _token;
   late String? _repoPath;
   late String? _configPath;
+  late bool? _lastLoginValid;
+  late bool? _lastRepoValid;
+  late bool? _lastConfigValid;
 
   ///-----init-----
   bool wasInitialized = false;
@@ -15,6 +18,9 @@ class PersistentStorage {
     await _loadToken();
     await _loadRepoPath();
     await _loadConfigPath();
+    await _loadLoginState();
+    await _loadRepoState();
+    await _loadConfigState();
     wasInitialized = true;
     return this;
   }
@@ -32,6 +38,21 @@ class PersistentStorage {
   Future<String?> _loadConfigPath() async {
     final prefs = await SharedPreferences.getInstance();
     return _configPath = prefs.getString('configPath');
+  }
+
+  Future<bool?> _loadLoginState() async {
+    final prefs = await SharedPreferences.getInstance();
+    return _lastLoginValid = prefs.getBool('loginState');
+  }
+
+  Future<bool?> _loadRepoState() async {
+    final prefs = await SharedPreferences.getInstance();
+    return _lastRepoValid = prefs.getBool('repoState');
+  }
+
+  Future<bool?> _loadConfigState() async {
+    final prefs = await SharedPreferences.getInstance();
+    return _lastConfigValid = prefs.getBool('configState');
   }
 
   ///-----save-----
@@ -53,6 +74,24 @@ class PersistentStorage {
     await prefs.setString('configPath', path);
   }
 
+  Future<void> saveLoginState({required bool success}) async {
+    _lastLoginValid = success;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('loginState', success);
+  }
+
+  Future<void> saveRepoState({required bool success}) async {
+    _lastRepoValid = success;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('repoState', success);
+  }
+
+  Future<void> saveConfigState({required bool success}) async {
+    _lastConfigValid = success;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('configState', success);
+  }
+
   ///-----get-----
   String? getToken() {
     assert(wasInitialized);
@@ -67,5 +106,20 @@ class PersistentStorage {
   String? getConfigPath() {
     assert(wasInitialized);
     return _configPath;
+  }
+
+  bool? getLoginState() {
+    assert(wasInitialized);
+    return _lastLoginValid;
+  }
+
+  bool? getRepoState() {
+    assert(wasInitialized);
+    return _lastRepoValid;
+  }
+
+  bool? getConfigState() {
+    assert(wasInitialized);
+    return _lastConfigValid;
   }
 }

@@ -1,5 +1,5 @@
-import 'package:cli_calendar_app/database/database_strategy.dart';
-import 'package:cli_calendar_app/persistent_storage.dart';
+import 'package:cli_calendar_app/services/database/database_strategy.dart';
+import 'package:cli_calendar_app/services/persistent_storage.dart';
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -41,7 +41,7 @@ class SettingsPage extends StatelessWidget {
           loginTextField(),
           repoTextField(),
           configTextField(),
-          //todo add username + api + time
+          //todo add username + api + time + auto setup button
         ],
       ),
     );

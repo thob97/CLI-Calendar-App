@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:cli_calendar_app/model/calendar_appointment.dart';
-import 'package:cli_calendar_app/parser/model/parser_strategy_pattern.dart';
-import 'package:cli_calendar_app/parser/regex.dart';
+import 'package:cli_calendar_app/services/parser/model/parser_strategy_pattern.dart';
+import 'package:cli_calendar_app/services/parser/regex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 

@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:cli_calendar_app/database/database_strategy.dart';
-import 'package:cli_calendar_app/database/model/config.dart';
 import 'package:cli_calendar_app/model/todo.dart';
-import 'package:cli_calendar_app/parser/regex.dart';
+import 'package:cli_calendar_app/services/database/database_strategy.dart';
+import 'package:cli_calendar_app/services/database/model/config.dart';
+import 'package:cli_calendar_app/services/parser/regex.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 

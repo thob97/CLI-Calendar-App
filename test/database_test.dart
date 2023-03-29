@@ -2,9 +2,9 @@
 
 import 'dart:io';
 
-import 'package:cli_calendar_app/database/github_connection.dart';
-import 'package:cli_calendar_app/database/model/config.dart';
 import 'package:cli_calendar_app/model/todo.dart';
+import 'package:cli_calendar_app/services/database/github_connection.dart';
+import 'package:cli_calendar_app/services/database/model/config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

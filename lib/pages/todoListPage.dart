@@ -1,4 +1,4 @@
-import 'package:cli_calendar_app/database/database_strategy.dart';
+import 'package:cli_calendar_app/services/database/database_strategy.dart';
 import 'package:flutter/material.dart';
 
 class TodoListPage extends StatelessWidget {

@@ -1,10 +1,10 @@
-import 'package:cli_calendar_app/database/database_strategy.dart';
-import 'package:cli_calendar_app/database/mocked_database.dart';
 import 'package:cli_calendar_app/pages/calendarPage.dart';
 import 'package:cli_calendar_app/pages/settings.dart';
 import 'package:cli_calendar_app/pages/todoListPage.dart';
-import 'package:cli_calendar_app/persistent_storage.dart';
+import 'package:cli_calendar_app/services/database/database_strategy.dart';
+import 'package:cli_calendar_app/services/database/mocked_database.dart';
 import 'package:cli_calendar_app/services/notification_service.dart';
+import 'package:cli_calendar_app/services/persistent_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:timezone/data/latest.dart' as tz;

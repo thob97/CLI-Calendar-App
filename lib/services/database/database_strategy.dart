@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:cli_calendar_app/database/model/config.dart';
 import 'package:cli_calendar_app/model/todo.dart';
+import 'package:cli_calendar_app/services/database/model/config.dart';
 
 abstract class DatabaseStrategy {
   Future<DatabaseStrategy?> init({

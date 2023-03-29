@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:cli_calendar_app/database/database_strategy.dart';
-import 'package:cli_calendar_app/database/model/config.dart';
 import 'package:cli_calendar_app/main.dart';
 import 'package:cli_calendar_app/model/calendar_appointment.dart';
-import 'package:cli_calendar_app/parser/when_parser.dart';
+import 'package:cli_calendar_app/services/database/database_strategy.dart';
+import 'package:cli_calendar_app/services/database/model/config.dart';
+import 'package:cli_calendar_app/services/parser/when_parser.dart';
 import 'package:cli_calendar_app/widgets/custom_future_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -66,8 +66,7 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 
-  @override
-  void initState() {
+  void init() {
     initCalendarFile();
     initConfig();
     super.initState();

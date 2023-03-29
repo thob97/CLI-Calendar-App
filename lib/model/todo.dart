@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:cli_calendar_app/parser/regex.dart';
+import 'package:cli_calendar_app/services/parser/regex.dart';
 
 class Todo {
   Todo({

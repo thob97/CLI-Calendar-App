@@ -1,4 +1,4 @@
-import 'package:cli_calendar_app/parser/when_parser.dart';
+import 'package:cli_calendar_app/services/parser/when_parser.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 

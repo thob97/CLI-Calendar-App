@@ -64,7 +64,7 @@ class MockedDatabase implements DatabaseStrategy {
   }) async {
     ///login -> setRepo -> setConfig  -> on any error return null
     late bool onError;
-    onError = !(await login(token) != null);
+    onError = !(await login(token));
     if (onError) {
       return null;
     }

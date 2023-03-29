@@ -47,7 +47,9 @@ class MyBackButton extends StatelessWidget {
     //doesn't change color when disabled -> used because it might flicker otherwise in settings
     return RawMaterialButton(
       onPressed: isDisabled ? null : onPressed,
-      child: const Icon(Icons.arrow_back_ios),
+      child: const Icon(
+        Icons.arrow_back_ios,
+      ),
     );
   }
 }
@@ -109,7 +111,7 @@ class MySettingsButton extends StatelessWidget {
 
   //open settings page
   void _onPressed(BuildContext context) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation1, animation2) => const SettingsPage(),

@@ -1,3 +1,4 @@
+import 'package:cli_calendar_app/pages/calendarPage.dart';
 import 'package:cli_calendar_app/services/database/database_strategy.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
 import 'package:cli_calendar_app/widgets/appbar.dart';
@@ -54,7 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: SettingsAppBar(isDisabled: notifyAppbarWhenLoading),
       bottomNavigationBar:
-          SettingsNavBar(onPressed: () {}, isLoggedIn: isLoggedIn),
+      SettingsNavBar(onPressed: () {}, isLoggedIn: isLoggedIn),
       body: RefreshIndicator(
         //todo add refresh
         onRefresh: () => Future(() => null),
@@ -95,7 +96,7 @@ class _SettingsPageState extends State<SettingsPage> {
       notifyNextTextField: (success) => isLoggedIn.value = success,
       initialState: isLoggedIn.value,
       notifyWhenLoading: (isLoading) =>
-          notifyAppbarWhenLoading.value = isLoading,
+      notifyAppbarWhenLoading.value = isLoading,
     );
   }
 
@@ -122,7 +123,7 @@ class _SettingsPageState extends State<SettingsPage> {
           initialState: repoPathIsValid.value,
           enabled: notifierValue,
           notifyWhenLoading: (isLoading) =>
-              notifyAppbarWhenLoading.value = isLoading,
+          notifyAppbarWhenLoading.value = isLoading,
         );
       },
     );
@@ -147,7 +148,7 @@ class _SettingsPageState extends State<SettingsPage> {
           initialState: storage.getConfigState() ?? false,
           enabled: notifierValue,
           notifyWhenLoading: (isLoading) =>
-              notifyAppbarWhenLoading.value = isLoading,
+          notifyAppbarWhenLoading.value = isLoading,
         );
       },
     );
@@ -321,9 +322,9 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
   //+isLoading
   bool isRetry() =>
       !isDisabled() &&
-      prevStateWasDisabled &&
-      userInput != null &&
-      !isFirstBuild;
+          prevStateWasDisabled &&
+          userInput != null &&
+          !isFirstBuild;
 
   bool isDisabled() => !widget.enabled;
 
@@ -331,7 +332,7 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
 
   bool isSuccess({required bool? validated}) =>
       validated != null && validated && !isDisabled() ||
-      (isFirstBuild && widget.initialState);
+          (isFirstBuild && widget.initialState);
 
   bool isError({required bool? validated}) =>
       validated != null && !validated && !isDisabled();
@@ -459,6 +460,7 @@ class SettingsAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   //set value notifier to notify appBar
+  //disable backbutton while loading
   final ValueNotifier<bool> isDisabled;
 
   @override
@@ -469,12 +471,10 @@ class SettingsAppBar extends StatelessWidget implements PreferredSizeWidget {
         return MyAppBar(
           title: 'Settings',
           //normally show back button(null->pushedNavigator->autoBackButton), show disable back button when disabled
-          leadingButton: isDisabled
-              ? MyBackButton(
-                  onPressed: () {},
-                  isDisabled: isDisabled,
-                )
-              : null,
+          leadingButton: MyBackButton(
+            onPressed: () => onBackButton(context),
+            isDisabled: isDisabled,
+          ),
         );
       },
     );
@@ -483,6 +483,17 @@ class SettingsAppBar extends StatelessWidget implements PreferredSizeWidget {
   ///-----FUNCTIONS-----
   @override //use system standard defined height for appbar
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  void onBackButton(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => const CalendarPage(),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+  }
 }
 
 //
@@ -492,8 +503,7 @@ class SettingsAppBar extends StatelessWidget implements PreferredSizeWidget {
 //
 ///-----NavBar-----
 class SettingsNavBar extends StatelessWidget {
-  const SettingsNavBar(
-      {super.key, required this.onPressed, required this.isLoggedIn});
+  const SettingsNavBar({super.key, required this.onPressed, required this.isLoggedIn});
 
   final VoidCallback onPressed;
   final ValueNotifier<bool> isLoggedIn;

@@ -30,7 +30,8 @@ Future<void> main() async {
   ///init database
   final DatabaseStrategy database = MockedDatabase();
   if (token != null && repoPath != null && configPath != null) {
-    database.init(token: token, repoName: repoPath, dbConfigPath: configPath);
+    await database.init(
+        token: token, repoName: repoPath, dbConfigPath: configPath);
   }
 
   ///init notifications

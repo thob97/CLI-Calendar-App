@@ -25,7 +25,6 @@ class CalendarPage extends StatefulWidget {
   State<CalendarPage> createState() => _CalendarPageState();
 }
 
-//todo - try to remove stateful widget?
 class _CalendarPageState extends State<CalendarPage> {
   late final Future<File?> futureDatabaseCalendarFile;
 
@@ -50,12 +49,12 @@ class _CalendarPageState extends State<CalendarPage> {
       final DateTime now = DateTime.now();
       showEntriesFrom = DateTime(
         now.year,
-        now.month - config.lookBackMonthsBeforeRecalculatingCalendarFile_min0,
+        now.month - config.monthsBack,
         now.day,
       );
       showEntriesUntil = DateTime(
         now.year,
-        now.month + config.lookAheadMonthsBeforeRecalculatingCalendarFile_min1,
+        now.month + config.monthsAhead,
         now.day,
       );
     }
@@ -66,7 +65,8 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 
-  void init() {
+  @override
+  void initState() {
     initCalendarFile();
     initConfig();
     super.initState();

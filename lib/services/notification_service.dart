@@ -1,17 +1,18 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   ///-----PLUGIN-----
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   ///init
   Future<void> initNotification() async {
     ///android settings
     //get logo from: app/src/main/res/drawable
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('notification_logo.jpg');
+    AndroidInitializationSettings('notification_logo.jpg');
 
     ///ios settings
     const initializationSettingsIOS = DarwinInitializationSettings(
@@ -72,6 +73,8 @@ class NotificationService {
     String? body,
     required DateTime scheduledNotificationTime,
   }) async {
+    debugPrint(
+        'added scheduled notification at:$scheduledNotificationTime, title:$title, body:$body');
     return _notificationsPlugin.zonedSchedule(
       id,
       title,
@@ -83,7 +86,7 @@ class NotificationService {
       _getNotificationDetails(),
       androidAllowWhileIdle: true,
       uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 }

@@ -1,4 +1,6 @@
-2000 4 13, bachelor thesis abgabe/appointment
+#2023 4 13, bachelor thesis abgabe/appointment
+2023 3 29, 14:07 notify test
+w=wen, every wendsday
 ((w=mon & d=27) | d=25), 10:00 every monday
 w=fri, 10:00-12:30 every friday: if two times are specified the app even displays them accordingly
 

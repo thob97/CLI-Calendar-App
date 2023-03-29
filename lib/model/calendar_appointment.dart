@@ -43,7 +43,7 @@ class CalendarEventDataSource extends CalendarDataSource {
 
   @override
   bool isAllDay(int index) {
-    //if no time gap between start and end date //todo add config
+    //if no time gap between start and end date
     return getEvent(index).startDate.isAtSameMomentAs(getEvent(index).endDate);
   }
 }

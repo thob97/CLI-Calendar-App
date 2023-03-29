@@ -27,119 +27,10 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  late final Future<File?> futureDatabaseCalendarFile;
+  //database -> parse -> appointments
+  late final Future<List<CalendarAppointment>?> futureAppointments;
 
   ///-----init-----
-  void initCalendarFile() {
-    //if initialized -> fetch calendar file
-    if (widget.database.isInitialized()) {
-      futureDatabaseCalendarFile = widget.database.fetchCalendarFile();
-    } else {
-      futureDatabaseCalendarFile = Future(() => null);
-    }
-  }
-
-  late final DateTime showEntriesFrom;
-  late final DateTime showEntriesUntil;
-  late final int hoursBeforeNotify; //for notifications
-  late final List<int> daysToNotifyOn; //for notifications
-
-  void initConfig() {
-    ///if config available: get values
-    if (widget.database.isInitialized()) {
-      ///calculate dates
-      final Config config = widget.database.getConfig();
-      final DateTime now = DateTime.now();
-      showEntriesFrom = DateTime(
-        now.year,
-        now.month - config.monthsBack,
-        now.day,
-      );
-      showEntriesUntil = DateTime(
-        now.year,
-        now.month + config.monthsAhead,
-        now.day,
-      );
-      hoursBeforeNotify = config.notifyOffsetInHours;
-      daysToNotifyOn = config.notifyAtDaysBefore;
-    }
-
-    ///else show no dates -> placeholder values
-    else {
-      showEntriesFrom = DateTime.now();
-      showEntriesUntil = showEntriesFrom;
-    }
-  }
-
-  @override
-  void initState() {
-    initCalendarFile();
-    initConfig();
-    super.initState();
-  }
-
-  ///-----BUILD-PAGE-----
-  @override
-  Widget build(BuildContext context) {
-    return _buildFuture();
-  }
-
-  ///-----WIDGETS-----
-  Widget _buildFuture() {
-    return CustomFutureBuilder(
-      futureData: futureDatabaseCalendarFile,
-      builder: (calendarFile) {
-        return _calendar(calendarFile as File?);
-      },
-    );
-  }
-
-  Widget _calendar(File? calendarFile) {
-    final List<CalendarAppointment> appointments = calendarFile == null
-        ? []
-        : WhenParser().convertToCalendarAppointment(
-            calendarFile,
-            showEntriesFrom,
-            showEntriesUntil,
-          );
-
-    ///add notifications
-    _registerNotificationForCalendarAppointments(
-      appointments: appointments,
-      hoursBeforeNotify: hoursBeforeNotify,
-      daysToNotifyOn: daysToNotifyOn,
-    );
-
-    ///show calendar widget
-    return SfCalendar(
-      view: defaultView,
-      controller: widget.calenderViewController,
-      onTap: _onTapDateChangeToDayView,
-      dataSource: CalendarEventDataSource(appointments),
-      //todo: maybe change styling
-      //onViewChanged: _onViewChanged, //todo don't allow blue border
-      cellBorderColor: Colors.transparent,
-      //loadMoreWidgetBuilder: , //todo load max 3 pages
-      //todo remove on long tab hold
-    );
-  }
-
-  ///-----STYLE-----
-  static const CalendarView defaultView = CalendarView.month;
-
-  ///-----FUNCTIONS-----
-  //def: change to day view when tapping on a calendar cell
-  void _onTapDateChangeToDayView(CalendarTapDetails calendarTapDetails) {
-    if (widget.calenderViewController.view == CalendarView.month &&
-        calendarTapDetails.targetElement == CalendarElement.calendarCell) {
-      //todo maybe change view to schedule
-      //change view
-      widget.calenderViewController.view = CalendarView.day;
-      //notify listeners
-      widget.pageStateNotifier.value = PageState.calendarDay;
-    }
-  }
-
   void _registerNotificationForCalendarAppointments({
     required List<CalendarAppointment> appointments,
     required int hoursBeforeNotify,
@@ -173,6 +64,100 @@ class _CalendarPageState extends State<CalendarPage> {
           }
         }
       }
+    }
+  }
+
+  @override
+  void initState() {
+    futureAppointments = init();
+    super.initState();
+  }
+
+  Future<List<CalendarAppointment>?> init() async {
+    ///if config available
+    if (widget.database.isInitialized()) {
+      ///get calendar file
+      final File? calendarFile = await widget.database.fetchCalendarFile();
+
+      ///get config
+      final Config config = widget.database.getConfig();
+
+      ///parse calendar file
+      final DateTime now = DateTime.now();
+      final showEntriesFrom = DateTime(
+        now.year,
+        now.month - config.monthsBack,
+        now.day,
+      );
+      final showEntriesUntil = DateTime(
+        now.year,
+        now.month + config.monthsAhead,
+        now.day,
+      );
+      final List<CalendarAppointment> appointments = calendarFile == null
+          ? []
+          : WhenParser().convertToCalendarAppointment(
+              calendarFile,
+              showEntriesFrom,
+              showEntriesUntil,
+            );
+
+      ///add notifications
+      _registerNotificationForCalendarAppointments(
+        appointments: appointments,
+        hoursBeforeNotify: config.notifyOffsetInHours,
+        daysToNotifyOn: config.notifyAtDaysBefore,
+      );
+      return appointments;
+    } else {
+      return null;
+    }
+  }
+
+  ///-----BUILD-PAGE-----
+  @override
+  Widget build(BuildContext context) {
+    return _buildFuture();
+  }
+
+  ///-----WIDGETS-----
+  Widget _buildFuture() {
+    return CustomFutureBuilder(
+      futureData: futureAppointments,
+      builder: (calendarFile) {
+        return _calendar(calendarFile as List<CalendarAppointment>?);
+      },
+    );
+  }
+
+  Widget _calendar(List<CalendarAppointment>? appointments) {
+    ///show calendar widget
+    return SfCalendar(
+      view: defaultView,
+      controller: widget.calenderViewController,
+      onTap: _onTapDateChangeToDayView,
+      dataSource: CalendarEventDataSource(appointments ?? []),
+      //todo: maybe change styling
+      //onViewChanged: _onViewChanged, //todo don't allow blue border
+      cellBorderColor: Colors.transparent,
+      //loadMoreWidgetBuilder: , //todo load max 3 pages
+      //todo remove on long tab hold
+    );
+  }
+
+  ///-----STYLE-----
+  static const CalendarView defaultView = CalendarView.month;
+
+  ///-----FUNCTIONS-----
+  //def: change to day view when tapping on a calendar cell
+  void _onTapDateChangeToDayView(CalendarTapDetails calendarTapDetails) {
+    if (widget.calenderViewController.view == CalendarView.month &&
+        calendarTapDetails.targetElement == CalendarElement.calendarCell) {
+      //todo maybe change view to schedule
+      //change view
+      widget.calenderViewController.view = CalendarView.day;
+      //notify listeners
+      widget.pageStateNotifier.value = PageState.calendarDay;
     }
   }
 

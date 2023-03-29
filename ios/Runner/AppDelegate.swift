@@ -8,6 +8,15 @@ import Flutter
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+
+    ///for notifications: flutter_local_notifications
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+    }
+    ///end: for notifications
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+
 }
+

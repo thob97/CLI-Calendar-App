@@ -4,8 +4,10 @@ import 'package:cli_calendar_app/pages/calendarPage.dart';
 import 'package:cli_calendar_app/pages/settings.dart';
 import 'package:cli_calendar_app/pages/todoListPage.dart';
 import 'package:cli_calendar_app/persistent_storage.dart';
+import 'package:cli_calendar_app/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 enum PageState {
   calendarMonth,
@@ -30,6 +32,10 @@ Future<void> main() async {
   if (token != null && repoPath != null && configPath != null) {
     database.init(token: token, repoName: repoPath, dbConfigPath: configPath);
   }
+
+  ///init notifications
+  NotificationService().initNotification();
+  tz.initializeTimeZones();
 
   ///runApp
   runApp(MyApp(database: database, storage: storage));

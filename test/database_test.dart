@@ -528,10 +528,19 @@ void main() {
 
     group('config: required for issues tests', skip: false, () {
       const config = Config(
+        //tested
         customCommitMsg: 'custom commit msg',
-        issueFileUploadDirPath: 'customFileDir',
-        issueLabelOfTodoEntries: 'customLabel',
+        issueFileDirPath: 'customFileDir',
+        issueLabel: 'customLabel',
         calendarFilePath: 'calendar.filepath.notNeeded.inThis.test',
+        //
+        enableNotifications: true,
+        notifyOffsetInHours: 0,
+        notifyAtDaysBefore: [1],
+        maxDisplayedIssues: 10,
+        newTodoPlaceholderTitle: 'Custom',
+        monthsBack: 1,
+        monthsAhead: 1,
       );
       const String dbFilePath = 'config.json';
 

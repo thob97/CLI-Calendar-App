@@ -34,7 +34,7 @@ class MockedDatabase implements DatabaseStrategy {
   @override
   Future<bool> setConfig({required String dbConfigPath}) {
     if (dbConfigPath == 'config.json') {
-      _config = const Config(calendarFilePath: 'calendarFilePath');
+      _config = Config.defaultSettings(calendarFilePath: 'calendarFilePath');
       return Future.delayed(const Duration(seconds: 1)).then((_) => true);
     } else {
       _config = null;

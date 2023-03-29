@@ -1,13 +1,30 @@
 import 'package:cli_calendar_app/services/database/database_strategy.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
+import 'package:cli_calendar_app/widgets/appbar.dart';
+import 'package:cli_calendar_app/widgets/bottomNavBar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-class SettingsPage extends StatelessWidget {
-  SettingsPage({super.key, required this.database, required this.storage});
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
 
-  final PersistentStorage storage;
-  final DatabaseStrategy database;
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  ///-----INIT-----
+  late final PersistentStorage storage;
+  late final DatabaseStrategy database;
+
+  @override
+  void initState() {
+    //get database & storage
+    database = Provider.of<DatabaseStrategy>(context, listen: false);
+    storage = Provider.of<PersistentStorage>(context, listen: false);
+    super.initState();
+  }
 
   ///-----FUNCTIONS-----
   Future<bool> login(String login) async {
@@ -34,26 +51,35 @@ class SettingsPage extends StatelessWidget {
   ///-----PAGE-----
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      //todo add refresh
-      onRefresh: () => Future(() => null),
-      child: ListView(
-        children: [
-          loginTextField(),
-          repoTextField(),
-          configTextField(),
-          userInfo(),
-          //todo add auto setup button
-        ],
+    return Scaffold(
+      appBar: SettingsAppBar(isDisabled: notifyAppbarWhenLoading),
+      bottomNavigationBar:
+          SettingsNavBar(onPressed: () {}, isLoggedIn: isLoggedIn),
+      body: RefreshIndicator(
+        //todo add refresh
+        onRefresh: () => Future(() => null),
+        child: ListView(
+          children: [
+            loginTextField(),
+            repoTextField(),
+            configTextField(),
+            userInfo(),
+          ],
+        ),
       ),
     );
   }
 
   ///-----WIDGETS-----
+  //
+  final ValueNotifier<bool> notifyAppbarWhenLoading = ValueNotifier(true);
+
   //key for getting the input of the text-field
   //notifier to notify the other text-field listeners
   final loginFormKey = GlobalKey<FormState>();
+
   final ValueNotifier<bool> isLoggedIn = ValueNotifier(false);
+
   Widget loginTextField() {
     //set initial success state (when opening settings will display init value)
     isLoggedIn.value = storage.getLoginState() ?? false;
@@ -66,15 +92,18 @@ class SettingsPage extends StatelessWidget {
       initialText: storage.getToken(),
       getFutureValidation: login,
       enabled: true,
-      onSubmit: (success) => isLoggedIn.value = success,
+      notifyNextTextField: (success) => isLoggedIn.value = success,
       initialState: isLoggedIn.value,
+      notifyWhenLoading: (isLoading) =>
+          notifyAppbarWhenLoading.value = isLoading,
     );
   }
 
   //key for getting the input of the text-field
-  //notifier to notify the other text-field listeners
   final repoFormKey = GlobalKey<FormState>();
+
   final ValueNotifier<bool> repoPathIsValid = ValueNotifier(false);
+
   Widget repoTextField() {
     //set initial success state (when opening settings will display init value)
     repoPathIsValid.value = storage.getRepoState() ?? false;
@@ -89,9 +118,11 @@ class SettingsPage extends StatelessWidget {
           prefixIcon: Icons.home,
           initialText: storage.getRepoPath(),
           getFutureValidation: setRepo,
-          onSubmit: (success) => repoPathIsValid.value = success,
+          notifyNextTextField: (success) => repoPathIsValid.value = success,
           initialState: repoPathIsValid.value,
           enabled: notifierValue,
+          notifyWhenLoading: (isLoading) =>
+              notifyAppbarWhenLoading.value = isLoading,
         );
       },
     );
@@ -99,6 +130,7 @@ class SettingsPage extends StatelessWidget {
 
   //key for getting the input of the text-field
   final configFormKey = GlobalKey<FormState>();
+
   Widget configTextField() {
     return ValueListenableBuilder(
       valueListenable: repoPathIsValid,
@@ -111,9 +143,11 @@ class SettingsPage extends StatelessWidget {
           prefixIcon: Icons.settings,
           initialText: storage.getConfigPath(),
           getFutureValidation: setConfig,
-          onSubmit: (_) {},
+          notifyNextTextField: (_) {},
           initialState: storage.getConfigState() ?? false,
           enabled: notifierValue,
+          notifyWhenLoading: (isLoading) =>
+              notifyAppbarWhenLoading.value = isLoading,
         );
       },
     );
@@ -148,9 +182,10 @@ class CustomFutureTextFormField extends StatefulWidget {
     required this.prefixIcon,
     required this.validationErrorText,
     required this.getFutureValidation,
-    required this.onSubmit,
+    required this.notifyNextTextField,
     required this.initialState,
     required this.enabled,
+    required this.notifyWhenLoading,
   });
 
   final GlobalKey<FormState> formKey;
@@ -162,7 +197,8 @@ class CustomFutureTextFormField extends StatefulWidget {
   final String? initialText;
   final bool initialState;
   final Future<bool> Function(String) getFutureValidation;
-  final void Function(bool) onSubmit;
+  final void Function(bool) notifyNextTextField;
+  final void Function(bool) notifyWhenLoading;
 
   @override
   State<CustomFutureTextFormField> createState() =>
@@ -206,7 +242,7 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
   ///-----WIDGETS-----
 
   Widget customTextField({bool? validation, bool isLoading = false}) {
-    notifyAfterBuildValidation(validation);
+    notifyAfterBuildValidation(validation, isLoading);
     return Form(
       key: widget.formKey,
       child: TextFormField(
@@ -244,9 +280,14 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
     });
   }
 
-  void notifyAfterBuildValidation(bool? validation) {
+  void notifyAfterBuildValidation(bool? validation, bool isLoading) {
     ///at the end of build
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ///notify appbar that its loading
+      if (!isDisabled()) {
+        widget.notifyWhenLoading(isLoading);
+      }
+
       ///automatically retry text-field
       if (isRetry()) {
         setState(() {
@@ -295,9 +336,9 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
   bool isError({required bool? validated}) =>
       validated != null && !validated && !isDisabled();
 
-  void disableListener() => widget.onSubmit(false);
+  void disableListener() => widget.notifyNextTextField(false);
 
-  void activateListener() => widget.onSubmit(true);
+  void activateListener() => widget.notifyNextTextField(true);
 
   //todo change style to iso
   ///-----STYLE-----
@@ -401,6 +442,74 @@ class UserInfo extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+//
+//
+//
+//
+//shows backButton when in day view
+///-----AppBar-----
+class SettingsAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const SettingsAppBar({
+    super.key,
+    required this.isDisabled,
+  });
+
+  //set value notifier to notify appBar
+  final ValueNotifier<bool> isDisabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: isDisabled,
+      builder: (_, bool isDisabled, ___) {
+        return MyAppBar(
+          title: 'Settings',
+          //normally show back button(null->pushedNavigator->autoBackButton), show disable back button when disabled
+          leadingButton: isDisabled
+              ? MyBackButton(
+                  onPressed: () {},
+                  isDisabled: isDisabled,
+                )
+              : null,
+        );
+      },
+    );
+  }
+
+  ///-----FUNCTIONS-----
+  @override //use system standard defined height for appbar
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+//
+//
+//
+//
+//
+///-----NavBar-----
+class SettingsNavBar extends StatelessWidget {
+  const SettingsNavBar(
+      {super.key, required this.onPressed, required this.isLoggedIn});
+
+  final VoidCallback onPressed;
+  final ValueNotifier<bool> isLoggedIn;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: isLoggedIn,
+      builder: (_, bool isLoggedIn, ___) {
+        return MyBottomNavBar(
+          mainButton: AutoSetupButton(
+            isDisabled: !isLoggedIn,
+            onPressed: onPressed,
+          ),
+        );
+      },
     );
   }
 }

@@ -1,12 +1,11 @@
 import 'package:cli_calendar_app/pages/calendarPage.dart';
-import 'package:cli_calendar_app/pages/settings.dart';
-import 'package:cli_calendar_app/pages/todoListPage.dart';
 import 'package:cli_calendar_app/services/database/database_strategy.dart';
 import 'package:cli_calendar_app/services/database/mocked_database.dart';
 import 'package:cli_calendar_app/services/notification_service.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -38,80 +37,29 @@ Future<void> main() async {
   NotificationService().initNotification();
   tz.initializeTimeZones();
 
-  ///runApp
-  runApp(MyApp(database: database, storage: storage));
+  ///runApp with storage&database as singelton
+  runApp(
+    Provider<DatabaseStrategy>(
+      create: (_) => database,
+      child: Provider<PersistentStorage>(
+        create: (_) => storage,
+        child: const MyApp(),
+      ),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({
-    super.key,
-    required this.database,
-    required this.storage,
-  });
-
-  final DatabaseStrategy database;
-  final PersistentStorage storage;
-
-  ///-----VARIABLES-----
-  static const PageState startPage = PageState.calendarMonth;
+  const MyApp({super.key});
 
   ///-----APP-----
   @override
   Widget build(BuildContext context) {
-    //get calendarController to change the views in calendar widget
-    final CalendarController calenderViewController = CalendarController();
-    //set value notifier to notify appBar & navBar & getPage()
-    final ValueNotifier<PageState> pageStateNotifier = ValueNotifier(startPage);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: Scaffold(
-        appBar: ListeningAppBar(
-          calenderViewController: calenderViewController,
-          pageStateNotifier: pageStateNotifier,
-        ),
-        bottomNavigationBar: ListeningBotNavBar(
-          pageStateNotifier: pageStateNotifier,
-        ),
-        body: getPage(calenderViewController, pageStateNotifier),
-      ),
-    );
-  }
-
-  ///-----getPage-----
-  Widget getPage(
-    CalendarController calenderViewController,
-    ValueNotifier<PageState> pageStateNotifier,
-  ) {
-    return ValueListenableBuilder(
-      valueListenable: pageStateNotifier,
-      builder: (_, __, ___) {
-        switch (pageStateNotifier.value) {
-          ///CalendarPage
-          case PageState.calendarDay:
-          case PageState.calendarMonth:
-            return CalendarPage(
-              calenderViewController: calenderViewController,
-              pageStateNotifier: pageStateNotifier,
-              database: database,
-            );
-
-        ///TodoView
-          case PageState.todoView:
-          case PageState.todoNew:
-            return TodoListPage(database: database);
-
-        ///Settings
-          case PageState.settings:
-            return SettingsPage(
-              database: database,
-              storage: storage,
-            );
-        }
-      },
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: CalendarPage(),
     );
   }
 }
@@ -247,8 +195,7 @@ class ListeningAppBar extends StatelessWidget implements PreferredSizeWidget {
 //
 ///-----BottomNavBar-----
 class ListeningBotNavBar extends StatelessWidget {
-  const ListeningBotNavBar({
-    super.key, required this.pageStateNotifier});
+  const ListeningBotNavBar({super.key, required this.pageStateNotifier});
 
   final ValueNotifier<PageState> pageStateNotifier;
 

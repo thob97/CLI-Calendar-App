@@ -1,6 +1,7 @@
 import 'package:cli_calendar_app/services/database/database_strategy.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class SettingsPage extends StatelessWidget {
   SettingsPage({super.key, required this.database, required this.storage});
@@ -11,7 +12,7 @@ class SettingsPage extends StatelessWidget {
   ///-----FUNCTIONS-----
   Future<bool> login(String login) async {
     await storage.saveToken(login);
-    final bool success = await database.login(login) != null;
+    final bool success = await database.login(login);
     await storage.saveLoginState(success: success);
     return success;
   }
@@ -41,7 +42,9 @@ class SettingsPage extends StatelessWidget {
           loginTextField(),
           repoTextField(),
           configTextField(),
-          //todo add username + api + time + auto setup button
+          autoSetupButton(),
+          userInfo(),
+          //todo add auto setup button
         ],
       ),
     );
@@ -112,6 +115,29 @@ class SettingsPage extends StatelessWidget {
           onSubmit: (_) {},
           initialState: storage.getConfigState() ?? false,
           enabled: notifierValue,
+        );
+      },
+    );
+  }
+
+  Widget autoSetupButton() {
+    return ValueListenableBuilder(
+      valueListenable: isLoggedIn,
+      builder: (_, bool notifierValue, ___) {
+        return FilledButton(
+            onPressed: () => database.autoSetup(), child: Text('AutoSetup'));
+      },
+    );
+  }
+
+  Widget userInfo() {
+    return ValueListenableBuilder(
+      valueListenable: isLoggedIn,
+      builder: (_, bool notifierValue, ___) {
+        return UserInfo(
+          userName: notifierValue ? database.getUsername() : null,
+          apiCallsLeft: notifierValue ? database.getRemainingRateLimit() : null,
+          resetTime: notifierValue ? database.getResetOfRateLimit() : null,
         );
       },
     );
@@ -349,5 +375,43 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
     } else {
       return null;
     }
+  }
+}
+
+//
+//
+//
+//
+//
+///-----UserInfo-----
+class UserInfo extends StatelessWidget {
+  const UserInfo({
+    super.key,
+    required this.userName,
+    required this.apiCallsLeft,
+    required this.resetTime,
+  });
+
+  final String? userName;
+  final int? apiCallsLeft;
+  final DateTime? resetTime;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Logged in as: $userName'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('API calls left: $apiCallsLeft'),
+            Text(
+              'Next reset at: ${resetTime == null ? '' : DateFormat.Hm().format(resetTime!)}',
+            )
+          ],
+        ),
+      ],
+    );
   }
 }

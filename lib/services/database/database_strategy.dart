@@ -12,7 +12,7 @@ abstract class DatabaseStrategy {
 
   Future<bool> autoSetup();
 
-  Future<String?> login(String token);
+  Future<bool> login(String token);
 
   Future<bool> setRepo({required String repoName});
 
@@ -33,4 +33,6 @@ abstract class DatabaseStrategy {
   int? getRemainingRateLimit();
 
   DateTime? getResetOfRateLimit();
+
+  String getUsername();
 }

@@ -119,9 +119,9 @@ void main() {
     group('Test TokenScope', skip: false, () {
       test('only required scopes', () async {
         final Database tempDb = Database();
-        final String? loginId = await tempDb.login(tokenOnlyRequiredScopes);
+        final bool loginId = await tempDb.login(tokenOnlyRequiredScopes);
         expect(
-          loginId != null,
+          loginId,
           true,
           reason: 'database should connect, as token is valid',
         );
@@ -133,12 +133,12 @@ void main() {
       });
       test('no scopes', () async {
         final Database tempDb = Database();
-        final String? loginId = await tempDb.login(tokenNoneScopes);
+        final bool loginId = await tempDb.login(tokenNoneScopes);
         expect(
-          loginId != null,
+          loginId,
           true,
           reason:
-              'database should connect, as token is valid (only scopes are insufficient)',
+          'database should connect, as token is valid (only scopes are insufficient)',
         );
         expect(
           await tempDb.tokenScopeIsValid(),
@@ -148,9 +148,9 @@ void main() {
       });
       test('all scopes', () async {
         final Database tempDb = Database();
-        final String? loginId = await tempDb.login(tokenAllScopes);
+        final bool loginId = await tempDb.login(tokenAllScopes);
         expect(
-          loginId != null,
+          loginId,
           true,
           reason: 'database should connect, as token is valid',
         );
@@ -162,12 +162,12 @@ void main() {
       });
       test('one not needed scope', () async {
         final Database tempDb = Database();
-        final String? loginId = await tempDb.login(tokenOnlyOneScope);
+        final bool loginId = await tempDb.login(tokenOnlyOneScope);
         expect(
-          loginId != null,
+          loginId,
           true,
           reason:
-              'database should connect, as token is valid (only scopes are insufficient)',
+          'database should connect, as token is valid (only scopes are insufficient)',
         );
         expect(
           await tempDb.tokenScopeIsValid(),
@@ -184,19 +184,19 @@ void main() {
       group('login', () {
         test('login: invalid token', () async {
           final Database tempDb = Database();
-          final String? loginId = await tempDb.login('token');
+          final bool loginId = await tempDb.login('token');
           expect(
-            loginId == null,
+            loginId,
             true,
             reason:
-                'database should not return a connection, as token is invalid',
+            'database should not return a connection, as token is invalid',
           );
         });
         test('login: valid token', () async {
           final Database tempDb = Database();
-          final String? loginId = await tempDb.login(tokenOnlyRequiredScopes);
+          final bool loginId = await tempDb.login(tokenOnlyRequiredScopes);
           expect(
-            loginId != null,
+            loginId,
             true,
             reason: 'database should return a connection, as token is valid',
           );

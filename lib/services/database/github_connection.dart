@@ -184,12 +184,12 @@ class Database implements DatabaseStrategy {
   //def: tries to login -> updates gitHub and userName accordingly
   //assert: -
   //purpose: used in init() + to change the login
-  //return: userId if token is valid - null on failure
+  //return: true if token is valid - false on failure
   @override
-  Future<String?> login(String token) async {
+  Future<bool> login(String token) async {
     ///authenticate
     final GitHub testGitHubConnection =
-    GitHub(auth: Authentication.withToken(token));
+        GitHub(auth: Authentication.withToken(token));
 
     ///on success return login id and set github
     String? loginId;
@@ -199,14 +199,14 @@ class Database implements DatabaseStrategy {
     } catch (_) {
       //gitHub = null;
       _userName = null;
-      return null;
+      return false;
     }
     //never has been null in testing - unsure when if could be null - but to be safe
     if (loginId == null) throw Exception('Login succeeded but user id is null');
     //update github and userName on success
     gitHub = testGitHubConnection;
     _userName = loginId;
-    return loginId;
+    return true;
   }
 
   //todo: assert & check: only allow special chars '-' and '_' as github doesent accept others
@@ -405,6 +405,13 @@ class Database implements DatabaseStrategy {
     assert(isInitialized());
     assert(_config != null);
     return _config!;
+  }
+
+  //def: get username
+  //assert: user is logged in with token => thus username != null
+  @override
+  String getUsername() {
+    return _userName!;
   }
 
   ///-----FILES-----

@@ -11,23 +11,25 @@ import 'package:path_provider/path_provider.dart';
 class MockedDatabase implements DatabaseStrategy {
   ///-----INITIAL-----
   Config? _config;
-  bool isLoggedIn = false;
-  bool repoPathValid = false;
+  bool _isLoggedIn = false;
+  bool _repoPathValid = false;
+  String? _username;
 
   @override
   bool isInitialized() {
-    return isLoggedIn && repoPathValid && _config != null;
+    return _isLoggedIn && _repoPathValid && _config != null;
   }
 
   @override
-  Future<String?> login(String token) {
+  Future<bool> login(String token) {
     if (token == 'password') {
-      isLoggedIn = true;
-      return Future.delayed(const Duration(seconds: 1))
-          .then((_) => 'MockedUsername');
+      _isLoggedIn = true;
+      _username = 'MockedUsername';
+      return Future.delayed(const Duration(seconds: 1)).then((_) => true);
     } else {
-      isLoggedIn = false;
-      return Future.delayed(const Duration(seconds: 1)).then((_) => null);
+      _isLoggedIn = false;
+      _username = null;
+      return Future.delayed(const Duration(seconds: 1)).then((_) => false);
     }
   }
 
@@ -45,10 +47,10 @@ class MockedDatabase implements DatabaseStrategy {
   @override
   Future<bool> setRepo({required String repoName}) {
     if (repoName == 'repo') {
-      repoPathValid = true;
+      _repoPathValid = true;
       return Future.delayed(const Duration(seconds: 1)).then((_) => true);
     } else {
-      repoPathValid = false;
+      _repoPathValid = false;
       return Future.delayed(const Duration(seconds: 1)).then((_) => false);
     }
   }
@@ -75,6 +77,12 @@ class MockedDatabase implements DatabaseStrategy {
       return null;
     }
     return this;
+  }
+
+  @override
+  String getUsername() {
+    assert(_isLoggedIn);
+    return _username!;
   }
 
   @override
@@ -146,13 +154,13 @@ class MockedDatabase implements DatabaseStrategy {
   //(settings / user / information)
   @override
   int? getRemainingRateLimit() {
-    assert(isLoggedIn);
+    assert(_isLoggedIn);
     return Random().nextInt(5000);
   }
 
   @override
   DateTime? getResetOfRateLimit() {
-    assert(isLoggedIn);
+    assert(_isLoggedIn);
     return DateTime.now().add(const Duration(hours: 1));
   }
 

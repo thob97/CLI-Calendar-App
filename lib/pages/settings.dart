@@ -42,7 +42,6 @@ class SettingsPage extends StatelessWidget {
           loginTextField(),
           repoTextField(),
           configTextField(),
-          autoSetupButton(),
           userInfo(),
           //todo add auto setup button
         ],
@@ -116,16 +115,6 @@ class SettingsPage extends StatelessWidget {
           initialState: storage.getConfigState() ?? false,
           enabled: notifierValue,
         );
-      },
-    );
-  }
-
-  Widget autoSetupButton() {
-    return ValueListenableBuilder(
-      valueListenable: isLoggedIn,
-      builder: (_, bool notifierValue, ___) {
-        return FilledButton(
-            onPressed: () => database.autoSetup(), child: Text('AutoSetup'));
       },
     );
   }

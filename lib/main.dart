@@ -5,6 +5,7 @@ import 'package:cli_calendar_app/services/database/database_strategy.dart';
 import 'package:cli_calendar_app/services/database/mocked_database.dart';
 import 'package:cli_calendar_app/services/notification_service.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
   final PersistentStorage storage;
 
   ///-----VARIABLES-----
-  static const PageState startPage = PageState.settings;
+  static const PageState startPage = PageState.calendarMonth;
 
   ///-----APP-----
   @override
@@ -74,7 +75,6 @@ class MyApp extends StatelessWidget {
         ),
         bottomNavigationBar: ListeningBotNavBar(
           pageStateNotifier: pageStateNotifier,
-          calenderViewController: calenderViewController,
         ),
         body: getPage(calenderViewController, pageStateNotifier),
       ),
@@ -82,13 +82,15 @@ class MyApp extends StatelessWidget {
   }
 
   ///-----getPage-----
-  Widget getPage(CalendarController calenderViewController,
-      ValueNotifier<PageState> pageStateNotifier,) {
+  Widget getPage(
+    CalendarController calenderViewController,
+    ValueNotifier<PageState> pageStateNotifier,
+  ) {
     return ValueListenableBuilder(
       valueListenable: pageStateNotifier,
       builder: (_, __, ___) {
         switch (pageStateNotifier.value) {
-        ///CalendarPage
+          ///CalendarPage
           case PageState.calendarDay:
           case PageState.calendarMonth:
             return CalendarPage(
@@ -97,15 +99,16 @@ class MyApp extends StatelessWidget {
               database: database,
             );
 
-        ///CalendarSettings
+        ///TodoView
           case PageState.todoView:
           case PageState.todoNew:
             return TodoListPage(database: database);
 
-        ///CalendarSettings
+        ///Settings
           case PageState.settings:
             return SettingsPage(
-              database: database, storage: storage,
+              database: database,
+              storage: storage,
             );
         }
       },
@@ -133,23 +136,19 @@ class ListeningAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: pageStateNotifier,
-      builder: (_, __, ___) {
+      builder: (_, PageState state, ___) {
         return AppBar(
-          title: _title(),
-          leading: _suffixButton(),
-          actions: _prefixButton(),
+          title: _decideTitle(state),
+          leading: _decideSuffixButton(state),
+          actions: _decidePrefixButton(state),
         );
       },
     );
   }
 
-  ///-----FUNCTIONS-----
-  @override //use system standard defined height for appbar
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-
   ///-----WIDGETS-----
-  Text _title() {
-    switch (pageStateNotifier.value) {
+  Text _decideTitle(PageState state) {
+    switch (state) {
       case PageState.calendarDay:
       case PageState.calendarMonth:
         return const Text('Calendar');
@@ -161,25 +160,83 @@ class ListeningAppBar extends StatelessWidget implements PreferredSizeWidget {
     }
   }
 
-  Widget? _suffixButton() {
-    ///Calender Day View -> Show BackButton
-    if (pageStateNotifier.value == PageState.calendarDay) {
-      return IconButton(
-        onPressed: () {
-          //change calendar.view to month.view
-          calenderViewController.view = CalendarView.month;
-          pageStateNotifier.value = PageState.calendarMonth;
-        },
-        icon: const Icon(Icons.arrow_back_ios),
-      );
-    } else {
-      return null;
+  Widget? _decideSuffixButton(PageState state) {
+    switch (state) {
+      case PageState.calendarDay:
+      case PageState.todoView:
+      case PageState.settings:
+        return _backButton();
+      case PageState.todoNew:
+        return _abortButton();
+      case PageState.calendarMonth:
+        return null;
     }
   }
 
-  List<Widget>? _prefixButton() {
-    ///-> Add Button
-    return [IconButton(onPressed: () {}, icon: const Icon(Icons.add))];
+  List<Widget>? _decidePrefixButton(PageState state) {
+    switch (state) {
+      case PageState.calendarDay:
+      case PageState.calendarMonth:
+      case PageState.todoView:
+        return [_settingsButton()];
+      case PageState.todoNew:
+        return [_acceptButton()];
+      case PageState.settings:
+        return null;
+    }
+  }
+
+  IconButton _backButton() {
+    return IconButton(
+      onPressed: _onPressedBackButton,
+      icon: const Icon(Icons.arrow_back_ios),
+    );
+  }
+
+  IconButton _abortButton() {
+    return IconButton(
+      onPressed: _onPressedAbortButton,
+      icon: const Icon(Icons.cancel_outlined),
+    );
+  }
+
+  IconButton _settingsButton() {
+    return IconButton(
+      onPressed: _onPressedSettingsButton,
+      icon: const Icon(Icons.settings_outlined),
+    );
+  }
+
+  IconButton _acceptButton() {
+    return IconButton(
+      onPressed: _onPressedAcceptButton,
+      icon: const Icon(Icons.check_outlined),
+    );
+  }
+
+  ///-----FUNCTIONS-----
+  @override //use system standard defined height for appbar
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  //onPressed functions:
+  void _onPressedBackButton() {
+    //change calendar.view to month.view
+    calenderViewController.view = CalendarView.month;
+    pageStateNotifier.value = PageState.calendarMonth;
+  }
+
+  void _onPressedAbortButton() {
+    //todo show notificationgs
+    pageStateNotifier.value = PageState.calendarMonth;
+  }
+
+  void _onPressedSettingsButton() {
+    pageStateNotifier.value = PageState.settings;
+  }
+
+  void _onPressedAcceptButton() {
+    //todo upload todo
+    pageStateNotifier.value = PageState.todoView;
   }
 }
 
@@ -191,91 +248,103 @@ class ListeningAppBar extends StatelessWidget implements PreferredSizeWidget {
 ///-----BottomNavBar-----
 class ListeningBotNavBar extends StatelessWidget {
   const ListeningBotNavBar({
-    super.key,
-    required this.pageStateNotifier,
-    required this.calenderViewController,
-  });
+    super.key, required this.pageStateNotifier});
 
   final ValueNotifier<PageState> pageStateNotifier;
-  final CalendarController calenderViewController;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: pageStateNotifier,
-      builder: (_, __, ___) {
-        return BottomNavigationBar(
-          currentIndex: _getCurrentIndex(),
-          onTap: _onTabNavigate,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month),
-              label: 'Today',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.list_alt),
-              label: 'Todolist',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: 'Settings',
-            )
-          ],
+      builder: (_, PageState pageState, ___) {
+        return BottomAppBar(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _decideMainButton(pageState),
+              _decideSubButton(pageState),
+            ],
+          ),
         );
       },
     );
   }
 
-  ///-----FUNCTIONS-----
-  int _getCurrentIndex() {
-    switch (pageStateNotifier.value) {
-      case PageState.calendarDay:
-      case PageState.calendarMonth:
-        return 0;
-      case PageState.todoView:
-      case PageState.todoNew:
-        return 1;
-      case PageState.settings:
-        return 2;
+  ///-----WIDGETS-----
+  Widget _decideMainButton(PageState pageState) {
+    if (pageState != PageState.settings) {
+      return _newTodoButton();
+    } else {
+      return _autoSetupButton();
     }
   }
 
-  void _onTabNavigate(int index) {
-    switch (index) {
-    ///CalendarView
-      case 0:
-
-      ///if already in calendar view -> don't reload -> just update view to date:now
-        if (pageStateNotifier.value == PageState.calendarDay ||
-            pageStateNotifier.value == PageState.calendarMonth) {
-          //changes to month view
-          calenderViewController.view = CalendarView.month;
-          //displays today
-          calenderViewController.displayDate = DateTime.now();
-          //displays today
-          calenderViewController.selectedDate = DateTime.now();
-          pageStateNotifier.value = PageState.calendarMonth;
-        }
-
-        ///in different view ->
-        else {
-          pageStateNotifier.value = PageState.calendarMonth;
-        }
-        break;
-
-    ///TodoListView
-      case 1:
-        pageStateNotifier.value = PageState.todoView;
-        break;
-
-    ///SettingsView
-      case 2:
-        pageStateNotifier.value = PageState.settings;
-        break;
-
-    ///none
-      default:
-        break;
+  Widget _decideSubButton(PageState pageState) {
+    switch (pageState) {
+      case PageState.calendarDay:
+      case PageState.calendarMonth:
+        return _showTodoButton();
+      case PageState.todoView:
+      case PageState.todoNew:
+      case PageState.settings:
+        return const SizedBox.shrink();
     }
+  }
+
+  Widget _newTodoButton() {
+    return CupertinoButton(
+      onPressed: onNewTodo,
+      child: Row(
+        children: const [
+          Icon(Icons.add_circle),
+          SizedBox(width: 5),
+          Text(
+            'New Issue',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              //fontSize: 20,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _showTodoButton() {
+    return CupertinoButton(
+      onPressed: onShowTodos,
+      child: const Text('Show Issues'),
+    );
+  }
+
+  Widget _autoSetupButton() {
+    return CupertinoButton(
+      onPressed: onAutoSetup,
+      child: Row(
+        children: const [
+          Icon(Icons.add_circle),
+          SizedBox(width: 5),
+          Text(
+            'Auto Setup',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              //fontSize: 20,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  ///-----STYLE-----
+  ///-----FUNCTIONS-----
+  void onAutoSetup() {}
+
+  void onNewTodo() {
+    pageStateNotifier.value = PageState.todoNew;
+  }
+
+  void onShowTodos() {
+    pageStateNotifier.value = PageState.todoView;
   }
 }

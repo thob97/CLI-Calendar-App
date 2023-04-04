@@ -1,5 +1,5 @@
 import 'package:cli_calendar_app/pages/calendarPage.dart';
-import 'package:cli_calendar_app/services/database/database_strategy.dart';
+import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
 import 'package:cli_calendar_app/widgets/appbar.dart';
 import 'package:cli_calendar_app/widgets/bottomNavBar.dart';
@@ -17,17 +17,18 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   ///-----INIT-----
   late final PersistentStorage storage;
-  late final DatabaseStrategy database;
+  late final DatabaseProxy database;
 
   @override
   void initState() {
     //get database & storage
-    database = Provider.of<DatabaseStrategy>(context, listen: false);
+    database = Provider.of<DatabaseProxy>(context, listen: false);
     storage = Provider.of<PersistentStorage>(context, listen: false);
     super.initState();
   }
 
   ///-----FUNCTIONS-----
+  //todo use proxy? or reload on each page visit! remove proxy from storage
   Future<bool> login(String login) async {
     await storage.saveToken(login);
     final bool success = await database.login(login);
@@ -81,6 +82,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   final ValueNotifier<bool> isLoggedIn = ValueNotifier(false);
 
+  //todo refactor 3x textfields into one easie to understand widget with setstate
   Widget loginTextField() {
     //set initial success state (when opening settings will display init value)
     isLoggedIn.value = storage.getLoginState() ?? false;

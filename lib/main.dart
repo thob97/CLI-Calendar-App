@@ -1,5 +1,5 @@
 import 'package:cli_calendar_app/pages/calendarPage.dart';
-import 'package:cli_calendar_app/services/database/database_strategy.dart';
+import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/services/database/mocked_database.dart';
 import 'package:cli_calendar_app/services/notification_service.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
@@ -28,10 +28,13 @@ Future<void> main() async {
   final String? configPath = storage.getConfigPath();
 
   ///init database
-  final DatabaseStrategy database = MockedDatabase();
+  final DatabaseProxy database = DatabaseProxy(database: MockedDatabase());
   if (token != null && repoPath != null && configPath != null) {
     await database.init(
-        token: token, repoName: repoPath, dbConfigPath: configPath);
+      token: token,
+      repoName: repoPath,
+      dbConfigPath: configPath,
+    );
   }
 
   ///init notifications
@@ -40,7 +43,7 @@ Future<void> main() async {
 
   ///runApp with storage&database as singelton
   runApp(
-    Provider<DatabaseStrategy>(
+    Provider<DatabaseProxy>(
       create: (_) => database,
       child: Provider<PersistentStorage>(
         create: (_) => storage,

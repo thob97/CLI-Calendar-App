@@ -1,4 +1,4 @@
-import 'package:cli_calendar_app/services/database/database_strategy.dart';
+import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/widgets/appbar.dart';
 import 'package:cli_calendar_app/widgets/bottomNavBar.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +15,12 @@ class TodoListPage extends StatefulWidget {
 
 class _TodoListPageState extends State<TodoListPage> {
   ///-----INIT-----
-  late final DatabaseStrategy database;
+  late final DatabaseProxy database;
   late final ValueNotifier<bool> appBarListener; //change when creating newTodo
   @override
   void initState() {
     //get database
-    database = Provider.of<DatabaseStrategy>(context, listen: false);
+    database = Provider.of<DatabaseProxy>(context, listen: false);
     //get notifier
     appBarListener = ValueNotifier(widget.isCreatingNewTodo);
     super.initState();

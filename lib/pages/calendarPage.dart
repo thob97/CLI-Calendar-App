@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cli_calendar_app/model/calendar_appointment.dart';
 import 'package:cli_calendar_app/pages/todoListPage.dart';
+import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/services/database/database_strategy.dart';
 import 'package:cli_calendar_app/services/database/model/config.dart';
 import 'package:cli_calendar_app/services/notification_service.dart';
@@ -24,7 +25,6 @@ class _CalendarPageState extends State<CalendarPage> {
   //database -> parse -> appointments
   late final Future<List<CalendarAppointment>?> futureAppointments;
   late final DatabaseStrategy database;
-
 
   ///-----init-----
   void _registerNotificationForCalendarAppointments({
@@ -66,7 +66,7 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   void initState() {
     //get database
-    database = Provider.of<DatabaseStrategy>(context, listen: false);
+    database = Provider.of<DatabaseProxy>(context, listen: false);
     futureAppointments = init();
     super.initState();
   }
@@ -74,11 +74,16 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<List<CalendarAppointment>?> init() async {
     ///if config available
     if (database.isInitialized()) {
-      ///get calendar file
-      final File? calendarFile = await database.fetchCalendarFile();
-
       ///get config
-      final Config config = database.getConfig();
+      final Config? config = await database.getConfig();
+      //onError
+      if (config == null) return [];
+
+      ///get calendar file
+      final File? calendarFile =
+          await database.fetchCalendarFile(config: config);
+      //onError
+      if (calendarFile == null) return [];
 
       ///parse calendar file
       final DateTime now = DateTime.now();
@@ -92,13 +97,12 @@ class _CalendarPageState extends State<CalendarPage> {
         now.month + config.monthsAhead,
         now.day,
       );
-      final List<CalendarAppointment> appointments = calendarFile == null
-          ? []
-          : WhenParser().convertToCalendarAppointment(
-              calendarFile,
-              showEntriesFrom,
-              showEntriesUntil,
-            );
+      final List<CalendarAppointment> appointments =
+          WhenParser().convertToCalendarAppointment(
+        calendarFile,
+        showEntriesFrom,
+        showEntriesUntil,
+      );
 
       ///add notifications
       _registerNotificationForCalendarAppointments(
@@ -126,8 +130,8 @@ class _CalendarPageState extends State<CalendarPage> {
         calenderViewController: calenderViewController,
         isDayViewNotifier: isDayViewNotifier,
       ),
-      bottomNavigationBar: CalendarNavBar(
-          newTodoButtonDisabled: !database.isInitialized()),
+      bottomNavigationBar:
+          CalendarNavBar(newTodoButtonDisabled: !database.isInitialized()),
       body: _buildFuture(),
     );
   }
@@ -202,7 +206,7 @@ class CalendarAppBar extends StatelessWidget implements PreferredSizeWidget {
           followingButton: const MySettingsButton(),
           //show backButton when day
           leadingButton:
-          isDay ? MyBackButton(onPressed: _onPressedBackButton) : null,
+              isDay ? MyBackButton(onPressed: _onPressedBackButton) : null,
         );
       },
     );
@@ -218,6 +222,7 @@ class CalendarAppBar extends StatelessWidget implements PreferredSizeWidget {
     isDayViewNotifier.value = false;
   }
 }
+
 //
 //
 //
@@ -232,9 +237,11 @@ class CalendarNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MyBottomNavBar(
-      mainButton: NewTodoButton(isDisabled: newTodoButtonDisabled,
+      mainButton: NewTodoButton(
+          isDisabled: newTodoButtonDisabled,
           onPressed: () => _onPressed(context)),
-      subButton: const ShowTodosButton(),);
+      subButton: const ShowTodosButton(),
+    );
   }
 
   //open todoListPage page
@@ -243,7 +250,7 @@ class CalendarNavBar extends StatelessWidget {
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation1, animation2) =>
-        const TodoListPage(isCreatingNewTodo: true),
+            const TodoListPage(isCreatingNewTodo: true),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),

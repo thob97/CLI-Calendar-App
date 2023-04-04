@@ -5,7 +5,7 @@ import 'package:cli_calendar_app/pages/todoListPage.dart';
 import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/services/database/database_strategy.dart';
 import 'package:cli_calendar_app/services/database/model/config.dart';
-import 'package:cli_calendar_app/services/notification_service.dart';
+import 'package:cli_calendar_app/services/notification/calendar_notification.dart';
 import 'package:cli_calendar_app/services/parser/when_parser.dart';
 import 'package:cli_calendar_app/widgets/appbar.dart';
 import 'package:cli_calendar_app/widgets/bottomNavBar.dart';
@@ -27,42 +27,6 @@ class _CalendarPageState extends State<CalendarPage> {
   late final DatabaseStrategy database;
 
   ///-----init-----
-  void _registerNotificationForCalendarAppointments({
-    required List<CalendarAppointment> appointments,
-    required int hoursBeforeNotify,
-    required List<int> daysToNotifyOn,
-  }) {
-    //todo check for iphone vs android
-    //iphone only supports max 64 appointments
-    int counter = 0;
-
-    ///for every appointment
-    for (final CalendarAppointment appointment in appointments) {
-      ///if appointment is upcoming
-      if (appointment.startDate.isAfter(DateTime.now())) {
-        ///for every day to notify on
-        for (final int day in daysToNotifyOn) {
-          final DateTime notification = appointment.startDate
-              .add(Duration(days: -day, hours: -hoursBeforeNotify));
-
-          ///if notification is upcoming
-          if (notification.isAfter(DateTime.now())) {
-            ///ad scheduled notification
-            NotificationService().scheduleNotification(
-              scheduledNotificationTime: notification,
-              title: 'Calendar Notification',
-              body: appointment.description,
-            );
-
-            ///break if limit of scheduled notifications reached (iOS)
-            counter++;
-            if (counter >= 64) break;
-          }
-        }
-      }
-    }
-  }
-
   @override
   void initState() {
     //get database
@@ -105,7 +69,7 @@ class _CalendarPageState extends State<CalendarPage> {
       );
 
       ///add notifications
-      _registerNotificationForCalendarAppointments(
+      CalendarNotification().registerAppointmentNotifications(
         appointments: appointments,
         hoursBeforeNotify: config.notifyOffsetInHours,
         daysToNotifyOn: config.notifyAtDaysBefore,

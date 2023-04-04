@@ -1,7 +1,7 @@
 import 'package:cli_calendar_app/pages/calendarPage.dart';
 import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/services/database/mocked_database.dart';
-import 'package:cli_calendar_app/services/notification_service.dart';
+import 'package:cli_calendar_app/services/notification/notification_service.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

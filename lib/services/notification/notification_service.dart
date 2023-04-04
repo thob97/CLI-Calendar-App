@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -73,8 +72,7 @@ class NotificationService {
     String? body,
     required DateTime scheduledNotificationTime,
   }) async {
-    debugPrint(
-        'added scheduled notification at:$scheduledNotificationTime, title:$title, body:$body');
+    //debugPrint('added scheduled notification at:$scheduledNotificationTime, title:$title, body:$body');
     return _notificationsPlugin.zonedSchedule(
       id,
       title,

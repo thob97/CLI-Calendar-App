@@ -4,12 +4,13 @@ import 'package:cli_calendar_app/model/todo.dart';
 import 'package:cli_calendar_app/services/database/model/config.dart';
 
 abstract class DatabaseStrategy {
-  Future<DatabaseStrategy?> init({
+  Future<bool> init({
     required String token,
     required String repoName,
     required String dbConfigPath,
   });
 
+  //todo maybe add methods isLoggedIn, repoIsSet, configIsSet?
   Future<bool> autoSetup();
 
   Future<bool> login(String token);
@@ -18,17 +19,17 @@ abstract class DatabaseStrategy {
 
   Future<bool> setConfig({required String dbConfigPath});
 
-  Future<File?> fetchCalendarFile();
+  Future<File?> fetchCalendarFile({required Config config});
 
   Future<List<Todo>?> getNumOpenIssues(int num);
 
-  Future<int?> uploadIssue({required Todo todo});
+  Future<int?> uploadIssue({required Todo todo, required Config config});
 
   Future<bool> solveIssue({required int issueNumber});
 
   bool isInitialized();
 
-  Config getConfig();
+  Future<Config?> getConfig();
 
   int? getRemainingRateLimit();
 

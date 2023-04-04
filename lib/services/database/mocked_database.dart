@@ -10,14 +10,14 @@ import 'package:path_provider/path_provider.dart';
 
 class MockedDatabase implements DatabaseStrategy {
   ///-----INITIAL-----
-  Config? _config;
+  String? _configPath;
   bool _isLoggedIn = false;
   bool _repoPathValid = false;
   String? _username;
 
   @override
   bool isInitialized() {
-    return _isLoggedIn && _repoPathValid && _config != null;
+    return _isLoggedIn && _repoPathValid && _configPath != null;
   }
 
   @override
@@ -36,10 +36,10 @@ class MockedDatabase implements DatabaseStrategy {
   @override
   Future<bool> setConfig({required String dbConfigPath}) {
     if (dbConfigPath == 'config.json') {
-      _config = Config.defaultSettings(calendarFilePath: 'calendarFilePath');
+      _configPath = 'path';
       return Future.delayed(const Duration(seconds: 1)).then((_) => true);
     } else {
-      _config = null;
+      _configPath = null;
       return Future.delayed(const Duration(seconds: 1)).then((_) => false);
     }
   }
@@ -57,7 +57,7 @@ class MockedDatabase implements DatabaseStrategy {
 
   ///-----:-----
   @override
-  Future<DatabaseStrategy?> init({
+  Future<bool> init({
     required String token,
     required String repoName,
     required String dbConfigPath,
@@ -66,17 +66,17 @@ class MockedDatabase implements DatabaseStrategy {
     late bool onError;
     onError = !(await login(token));
     if (onError) {
-      return null;
+      return false;
     }
     onError = !(await setRepo(repoName: repoName));
     if (onError) {
-      return null;
+      return false;
     }
-    onError = !(await setConfig(dbConfigPath: dbConfigPath));
+    onError = !(await setConfig(dbConfigPath: dbConfigPath) == null);
     if (onError) {
-      return null;
+      return false;
     }
-    return this;
+    return true;
   }
 
   @override
@@ -91,7 +91,7 @@ class MockedDatabase implements DatabaseStrategy {
   }
 
   @override
-  Future<File?> fetchCalendarFile() {
+  Future<File?> fetchCalendarFile({required Config config}) {
     assert(isInitialized());
     return Future.delayed(const Duration(seconds: 1)).then(
       (_) => _getFileFromAssets(
@@ -138,16 +138,17 @@ class MockedDatabase implements DatabaseStrategy {
   }
 
   @override
-  Future<int?> uploadIssue({required Todo todo}) {
+  Future<int?> uploadIssue({required Todo todo, required Config config}) {
     assert(isInitialized());
     return Future.delayed(const Duration(seconds: 1)).then((_) => 1);
   }
 
   @override
-  Config getConfig() {
+  Future<Config?> getConfig() {
     assert(isInitialized());
-    assert(_config != null);
-    return _config!;
+    assert(_configPath != null);
+    return Future.delayed(const Duration(seconds: 1)).then(
+        (_) => Config.defaultSettings(calendarFilePath: 'calendarFilePath'));
   }
 
   ///-----OTHER-----

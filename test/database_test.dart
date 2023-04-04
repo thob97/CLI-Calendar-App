@@ -33,10 +33,11 @@ void main() {
   const String dbDir = 'testUploads';
   //tokens
   //'repo', 'workflow'
-  const String tokenOnlyRequiredScopes = '';
-  const String tokenNoneScopes = '';
-  const String tokenAllScopes = '';
-  const String tokenOnlyOneScope = '';
+  const String tokenOnlyRequiredScopes =
+      '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';
+  const String tokenNoneScopes = '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';
+  const String tokenAllScopes = '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';
+  const String tokenOnlyOneScope = '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';
 
   ///tests
   group('standalone tests', () {
@@ -46,14 +47,14 @@ void main() {
           const String testFilename = 'filename.test';
           const String testPath = 'assert/test/$testFilename';
           final String parsedFilename =
-              Database().getFilenameFromPath(testPath);
+              GitHubConnection().getFilenameFromPath(testPath);
           expect(parsedFilename, testFilename);
         });
         test('not expected input', () {
           const String testFilename = 'filename.test';
           const String testPath = testFilename;
           final String parsedFilename =
-              Database().getFilenameFromPath(testPath);
+              GitHubConnection().getFilenameFromPath(testPath);
           expect(parsedFilename, testFilename);
         });
       });
@@ -61,14 +62,14 @@ void main() {
         test('empty input', () {
           const String issueContent = '';
           final String parsedIssueText =
-              Database().getTextFromIssueContent(issueContent);
+              GitHubConnection().getTextFromIssueContent(issueContent);
           expect(parsedIssueText, '');
         });
         test('not expected input', () {
           const String issueText = 'test text';
           const String issueContent = '$issueText\nnrtiegnr\ntierngtie';
           final String parsedIssueText =
-              Database().getTextFromIssueContent(issueContent);
+              GitHubConnection().getTextFromIssueContent(issueContent);
           expect(parsedIssueText, issueText);
         });
         test('expected input', () {
@@ -78,7 +79,7 @@ void main() {
         ![assets/issue_3/test_image.jpg](https://raw.githubusercontent.com/thob97/FlutterTestRepo--2023-03-20T16_10_52.628239/main/assets/issue_3/test_image.jpg)
         [assets/issue_3/test_video.mp4](https://raw.githubusercontent.com/thob97/FlutterTestRepo--2023-03-20T16_10_52.628239/main/assets/issue_3/test_video.mp4)''';
           final String parsedIssueText =
-              Database().getTextFromIssueContent(issueContent);
+              GitHubConnection().getTextFromIssueContent(issueContent);
           expect(parsedIssueText, issueText);
         });
       });
@@ -93,24 +94,24 @@ void main() {
         ![${filePaths[0]}](https://raw.githubusercontent.com/thob97/FlutterTestRepo--2023-03-20T16_10_52.628239/main/assets/issue_3/test_image.jpg)
         [${filePaths[1]}](https://raw.githubusercontent.com/thob97/FlutterTestRepo--2023-03-20T16_10_52.628239/main/assets/issue_3/test_video.mp4)''';
           final List<String> parsedFilePaths =
-              Database().getFilePathsFromIssueContent(issueContent);
+              GitHubConnection().getFilePathsFromIssueContent(issueContent);
           expect(parsedFilePaths, filePaths);
         });
         test('expected input without files', () {
-          final List<String> parsedFilePaths =
-              Database().getFilePathsFromIssueContent('test Issue Body');
+          final List<String> parsedFilePaths = GitHubConnection()
+              .getFilePathsFromIssueContent('test Issue Body');
           expect(parsedFilePaths, []);
         });
         test('unexpected input', () {
           final List<String> parsedFilePaths =
-              Database().getFilePathsFromIssueContent(
+              GitHubConnection().getFilePathsFromIssueContent(
             'test Issue Body\n rntsiesnr\nienrs',
           );
           expect(parsedFilePaths, []);
         });
         test('empty input', () {
           final List<String> parsedFilePaths =
-              Database().getFilePathsFromIssueContent('');
+              GitHubConnection().getFilePathsFromIssueContent('');
           expect(parsedFilePaths, []);
         });
       });
@@ -118,7 +119,7 @@ void main() {
 
     group('Test TokenScope', skip: false, () {
       test('only required scopes', () async {
-        final Database tempDb = Database();
+        final GitHubConnection tempDb = GitHubConnection();
         final bool loginId = await tempDb.login(tokenOnlyRequiredScopes);
         expect(
           loginId,
@@ -132,13 +133,13 @@ void main() {
         );
       });
       test('no scopes', () async {
-        final Database tempDb = Database();
+        final GitHubConnection tempDb = GitHubConnection();
         final bool loginId = await tempDb.login(tokenNoneScopes);
         expect(
           loginId,
           true,
           reason:
-          'database should connect, as token is valid (only scopes are insufficient)',
+              'database should connect, as token is valid (only scopes are insufficient)',
         );
         expect(
           await tempDb.tokenScopeIsValid(),
@@ -147,7 +148,7 @@ void main() {
         );
       });
       test('all scopes', () async {
-        final Database tempDb = Database();
+        final GitHubConnection tempDb = GitHubConnection();
         final bool loginId = await tempDb.login(tokenAllScopes);
         expect(
           loginId,
@@ -161,13 +162,13 @@ void main() {
         );
       });
       test('one not needed scope', () async {
-        final Database tempDb = Database();
+        final GitHubConnection tempDb = GitHubConnection();
         final bool loginId = await tempDb.login(tokenOnlyOneScope);
         expect(
           loginId,
           true,
           reason:
-          'database should connect, as token is valid (only scopes are insufficient)',
+              'database should connect, as token is valid (only scopes are insufficient)',
         );
         expect(
           await tempDb.tokenScopeIsValid(),
@@ -179,21 +180,21 @@ void main() {
   });
 
   group('integration test?: (test from small to big)', () {
-    late final Database db;
+    late final GitHubConnection db;
     group('init tests: required for following tests', skip: false, () {
       group('login', () {
         test('login: invalid token', () async {
-          final Database tempDb = Database();
+          final GitHubConnection tempDb = GitHubConnection();
           final bool loginId = await tempDb.login('token');
           expect(
             loginId,
-            true,
+            false,
             reason:
-            'database should not return a connection, as token is invalid',
+                'database should not return a connection, as token is invalid',
           );
         });
         test('login: valid token', () async {
-          final Database tempDb = Database();
+          final GitHubConnection tempDb = GitHubConnection();
           final bool loginId = await tempDb.login(tokenOnlyRequiredScopes);
           expect(
             loginId,
@@ -619,22 +620,29 @@ void main() {
         files: [TodoFile(content: picFile), TodoFile(content: videoFile)],
       );
 
+      final Config testConfig =
+          Config.defaultSettings(calendarFilePath: 'calendarFilePath');
+
       ///
       group('uploadIssue', () {
         test('new issue', () async {
-          final int? id = await db.uploadIssue(todo: todoText);
+          final int? id =
+              await db.uploadIssue(todo: todoText, config: testConfig);
           expect(id != null, true);
           todoText.issueNumber = id;
         });
         test('new issue with files', () async {
-          final int? id = await db.uploadIssue(todo: todoWithFiles);
+          final int? id =
+              await db.uploadIssue(todo: todoWithFiles, config: testConfig);
           expect(id != null, true);
           todoWithFiles.issueNumber = id;
         });
         test('update issue', () async {
-          final int? toUpdateId = await db.uploadIssue(todo: todoDummy);
+          final int? toUpdateId =
+              await db.uploadIssue(todo: todoDummy, config: testConfig);
           todoUpdated.issueNumber = toUpdateId;
-          final int? id = await db.uploadIssue(todo: todoUpdated);
+          final int? id =
+              await db.uploadIssue(todo: todoUpdated, config: testConfig);
           expect(id != null, true);
           todoUpdated.issueNumber = id;
         });
@@ -642,7 +650,8 @@ void main() {
 
       ///
       test('solve issue', () async {
-        final int? toUSolveId = await db.uploadIssue(todo: todoSolved);
+        final int? toUSolveId =
+            await db.uploadIssue(todo: todoSolved, config: testConfig);
         final bool id = await db.solveIssue(issueNumber: toUSolveId!);
         expect(id, true);
       });
@@ -690,7 +699,7 @@ void main() {
       skip: false, () {
     const String dbConfigPath =
         'config.json'; // must be same as in autoSetup()!!!
-    final Database database = Database();
+    final GitHubConnection database = GitHubConnection();
 
     test('autoSetup', () async {
       await database.login(tokenOnlyRequiredScopes);
@@ -700,7 +709,7 @@ void main() {
     test(
         'initiate new database connection with just created repo from autoSetup()',
         () async {
-      final db = await Database().init(
+      final db = await GitHubConnection().init(
         token: tokenOnlyRequiredScopes,
         repoName: database.repo!.name,
         dbConfigPath: dbConfigPath,
@@ -711,7 +720,7 @@ void main() {
 
   test('clean up: delete ALL repos -CAREFUL!', skip: true, () async {
     ///login
-    final Database database = Database();
+    final GitHubConnection database = GitHubConnection();
     await database.login(tokenAllScopes);
     print(database.getResetOfRateLimit());
     print(database.getRemainingRateLimit());

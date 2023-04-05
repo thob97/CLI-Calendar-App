@@ -45,7 +45,7 @@ class AutoSetupButton extends StatelessWidget {
     return MainButton(
       text: 'Auto Setup',
       onPressed: () => _showAlert(context),
-      icon: Icons.refresh,
+      icon: CupertinoIcons.refresh,
       isDisabled: isDisabled,
     );
   }
@@ -93,7 +93,7 @@ class NewTodoButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return MainButton(
       text: 'Create a Todo',
-      icon: Icons.add_circle,
+      icon: CupertinoIcons.add_circled_solid,
       onPressed: onPressed,
       isDisabled: isDisabled,
     );

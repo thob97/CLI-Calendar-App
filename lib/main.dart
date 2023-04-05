@@ -59,10 +59,14 @@ class MyApp extends StatelessWidget {
   ///-----APP-----
   @override
   Widget build(BuildContext context) {
+    //todo: change to iOS App + change Scaffolds to iOSScaffolds
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+        scaffoldBackgroundColor:
+            CupertinoColors.tertiarySystemGroupedBackground,
+      ),
       home: CalendarPage(),
     );
   }

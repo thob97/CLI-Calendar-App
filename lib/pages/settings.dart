@@ -3,6 +3,8 @@ import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
 import 'package:cli_calendar_app/widgets/appbar.dart';
 import 'package:cli_calendar_app/widgets/bottomNavBar.dart';
+import 'package:cli_calendar_app/widgets/constrained_ios_refresh_list.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -46,14 +48,13 @@ class _SettingsPageState extends State<SettingsPage> {
         onPressed: onAutoSetup,
         disableWhileLoggedOut: isLoggedInNotifier,
       ),
-      body: RefreshIndicator(
+      body: ConstrainediOSRefreshList(
         onRefresh: onRefresh,
-        child: ListView(
-          children: [
-            _textFields(),
-            _userInfo(),
-          ],
-        ),
+        columnAlignment: MainAxisAlignment.spaceBetween,
+        child: [
+          _textFields(),
+          _userInfo(),
+        ],
       ),
     );
   }
@@ -74,6 +75,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Future(() => null);
   }
 
+  ///todo: add loading animation to autoSetup button
   Future<void> onAutoSetup() async {
     assert(isLoggedInNotifier.value);
 
@@ -148,7 +150,7 @@ class _SettingsPageState extends State<SettingsPage> {
 //
 //
 //
-///-----Textfield-----
+///-----TextFields-----
 class TextFields extends StatelessWidget {
   TextFields({
     required this.isLoggedInNotifier,
@@ -183,7 +185,8 @@ class TextFields extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return CupertinoListSection.insetGrouped(
+      header: const Text('Login'),
       children: [
         loginTextField(),
         repoTextField(),
@@ -200,10 +203,9 @@ class TextFields extends StatelessWidget {
     return CustomFutureTextFormField(
       key: loginWidgetKey,
       formKey: loginFormKey,
-      validationErrorText: 'errorText',
-      hintText: 'hintText',
-      labelText: 'labelText',
-      prefixIcon: Icons.person,
+      validationErrorText: 'Please enter a valid token with sufficient scope',
+      hintText: 'Token',
+      prefixIcon: CupertinoIcons.lock,
       getFutureValidation: loginFutureValidation,
       enabled: true,
       notifyNextTextField: (success) => isLoggedInNotifier.value = success,
@@ -225,10 +227,10 @@ class TextFields extends StatelessWidget {
         return CustomFutureTextFormField(
           key: repoWidgetKey,
           formKey: repoFormKey,
-          validationErrorText: 'errorText',
-          hintText: 'hintText',
-          labelText: 'labelText',
-          prefixIcon: Icons.home,
+          validationErrorText:
+              'Please enter a repo that belongs to the account',
+          hintText: 'Repository',
+          prefixIcon: CupertinoIcons.cloud,
           getFutureValidation: repoFutureValidation,
           notifyNextTextField: (success) => repoPathIsValid.value = success,
           initialState: repoPathIsValid.value,
@@ -248,10 +250,9 @@ class TextFields extends StatelessWidget {
       builder: (_, bool notifierValue, ___) {
         return CustomFutureTextFormField(
           formKey: configFormKey,
-          validationErrorText: 'errorText',
-          hintText: 'hintText',
-          labelText: 'labelText',
-          prefixIcon: Icons.settings,
+          hintText: 'Config file path',
+          validationErrorText: 'Please enter the config file path of that repo',
+          prefixIcon: CupertinoIcons.settings,
           getFutureValidation: configFutureValidation,
           notifyNextTextField: (_) {},
           initialState: initialConfigState ?? false,
@@ -269,13 +270,12 @@ class TextFields extends StatelessWidget {
 //
 //
 //
-///-----Textfield-----
+///-----CustomFutureTextFormField-----
 class CustomFutureTextFormField extends StatefulWidget {
   const CustomFutureTextFormField({
     super.key,
     required this.formKey,
     required this.hintText,
-    required this.labelText,
     required this.prefixIcon,
     required this.validationErrorText,
     required this.getFutureValidation,
@@ -291,7 +291,6 @@ class CustomFutureTextFormField extends StatefulWidget {
   final String validationErrorText;
   final String hintText;
   final bool enabled;
-  final String labelText;
   final IconData prefixIcon;
   final bool initialState;
   final Future<bool> Function(String) getFutureValidation;
@@ -346,12 +345,10 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
         textInputAction: TextInputAction.send,
         validator: (_) => validator(validated: validation),
         autovalidateMode: AutovalidateMode.onUserInteraction,
+        textAlignVertical: TextAlignVertical.center,
         decoration: InputDecoration(
           hintText: widget.hintText,
-
-          ///filled: true,
-          ///fillColor: validate ? green : red,
-          labelText: widget.labelText,
+          border: InputBorder.none,
           prefixIcon: prefixIcon(validated: validation),
           suffixIcon: suffixIcon(validated: validation, isLoading: isLoading),
           errorStyle: undersideTextStyle(validated: validation),
@@ -433,8 +430,8 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
 
   //todo change style to iso
   ///-----STYLE-----
-  static const Color errorColor = Colors.red;
-  static const Color successColor = Colors.green;
+  static const Color errorColor = CupertinoColors.destructiveRed;
+  static const Color successColor = CupertinoColors.activeGreen;
 
   TextStyle? undersideTextStyle({required bool? validated}) {
     ///success
@@ -453,7 +450,8 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
   String? validator({required bool? validated}) {
     ///onError
     if (isError(validated: validated)) {
-      return widget.validationErrorText;
+      //todo: hacky way to align the error message. maybe use Cupertino Form to fix
+      return '              ${widget.validationErrorText}';
     } else {
       return null;
     }
@@ -479,20 +477,20 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
   Widget? suffixIcon({required bool? validated, required bool isLoading}) {
     ///loading
     if (isLoading) {
-      return const CircularProgressIndicator();
+      return const CupertinoActivityIndicator();
     }
 
     ///success
     else if (isSuccess(validated: validated)) {
       return const Icon(
-        Icons.check_outlined,
+        CupertinoIcons.check_mark,
         color: successColor,
       );
     }
 
     ///error
     else if (isError(validated: validated)) {
-      return const Icon(Icons.close_outlined, color: errorColor);
+      return const Icon(CupertinoIcons.xmark, color: errorColor);
     } else {
       return null;
     }
@@ -519,17 +517,25 @@ class UserInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return CupertinoListSection.insetGrouped(
+      //header: const Text('Infos'),
+      //removes background color
+      decoration: const BoxDecoration(),
       children: [
-        Text('Logged in as: $userName'),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Column(
           children: [
-            Text('API calls left: $apiCallsLeft'),
-            Text(
-              'Next reset at: ${resetTime == null ? '' : DateFormat.Hm().format(resetTime!)}',
-            )
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Logged in as: $userName')),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('API calls left: $apiCallsLeft'),
+                Text(
+                  'Next reset at: ${resetTime == null ? '' : DateFormat.Hm().format(resetTime!)}',
+                )
+              ],
+            ),
           ],
         ),
       ],

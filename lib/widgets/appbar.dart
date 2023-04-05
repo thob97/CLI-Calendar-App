@@ -48,7 +48,7 @@ class MyBackButton extends StatelessWidget {
     return RawMaterialButton(
       onPressed: isDisabled ? null : onPressed,
       child: const Icon(
-        Icons.arrow_back_ios,
+        CupertinoIcons.back,
       ),
     );
   }
@@ -105,7 +105,7 @@ class MySettingsButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () => _onPressed(context),
-      icon: const Icon(Icons.settings_outlined),
+      icon: const Icon(CupertinoIcons.gear),
     );
   }
 

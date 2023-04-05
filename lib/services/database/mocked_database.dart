@@ -85,6 +85,13 @@ class MockedDatabase implements DatabaseStrategy {
     return _username!;
   }
 
+  //purpose: const values for autoSetup
+  @override
+  String get autoSetupRepoName => 'repo';
+
+  @override
+  String get autoSetupConfigPath => 'config.json';
+
   @override
   Future<bool> autoSetup() {
     return Future.delayed(const Duration(seconds: 2)).then((_) => true);

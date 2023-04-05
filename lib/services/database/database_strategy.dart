@@ -11,6 +11,10 @@ abstract class DatabaseStrategy {
   });
 
   //todo maybe add methods isLoggedIn, repoIsSet, configIsSet?
+  String get autoSetupRepoName;
+
+  String get autoSetupConfigPath;
+
   Future<bool> autoSetup();
 
   Future<bool> login(String token);

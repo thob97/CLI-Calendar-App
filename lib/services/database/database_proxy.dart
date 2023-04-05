@@ -134,4 +134,10 @@ class DatabaseProxy extends DatabaseStrategy {
   bool isInitialized() {
     return database.isInitialized();
   }
+
+  @override
+  String get autoSetupRepoName => database.autoSetupRepoName;
+
+  @override
+  String get autoSetupConfigPath => database.autoSetupConfigPath;
 }

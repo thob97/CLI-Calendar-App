@@ -3,13 +3,12 @@ import 'dart:io';
 import 'package:cli_calendar_app/model/calendar_appointment.dart';
 import 'package:cli_calendar_app/pages/todoListPage.dart';
 import 'package:cli_calendar_app/services/database/database_proxy.dart';
-import 'package:cli_calendar_app/services/database/database_strategy.dart';
 import 'package:cli_calendar_app/services/database/model/config.dart';
 import 'package:cli_calendar_app/services/notification/calendar_notification.dart';
 import 'package:cli_calendar_app/services/parser/when_parser.dart';
 import 'package:cli_calendar_app/widgets/appbar.dart';
 import 'package:cli_calendar_app/widgets/bottomNavBar.dart';
-import 'package:cli_calendar_app/widgets/custom_future_builder.dart';
+import 'package:cli_calendar_app/widgets/constrained_ios_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -23,8 +22,8 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   //database -> parse -> appointments
-  late final Future<List<CalendarAppointment>?> futureAppointments;
-  late final DatabaseStrategy database;
+  late Future<List<CalendarAppointment>?> futureAppointments;
+  late final DatabaseProxy database;
 
   ///-----init-----
   @override
@@ -96,17 +95,52 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
       bottomNavigationBar:
           CalendarNavBar(newTodoButtonDisabled: !database.isInitialized()),
-      body: _buildFuture(),
+      body: ConstrainediOSRefresh(
+        onRefresh: onRefresh,
+        //ignore alignment
+        columnAlignment: MainAxisAlignment.spaceEvenly,
+        child: _buildFuture(),
+      ),
     );
+  }
+
+  ///-----Functions-----
+  Future<void> onRefresh() {
+    database.clearProxyData();
+    setState(() {
+      futureAppointments = init();
+    });
+    return futureAppointments;
   }
 
   ///-----WIDGETS-----
   Widget _buildFuture() {
-    return CustomFutureBuilder(
-      futureData: futureAppointments,
-      builder: (calendarFile) {
-        return _calendar(calendarFile as List<CalendarAppointment>?);
+    return FutureBuilder(
+      future: futureAppointments,
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return _loadingCalendar([], true);
+          default:
+            return snapshot.hasError
+                ? const Center(child: Text('Something went wrong'))
+                : _calendar(snapshot.data as List<CalendarAppointment>?);
+        }
       },
+    );
+  }
+
+  Widget _loadingCalendar(
+      List<CalendarAppointment>? appointments, bool isLoading) {
+    return Stack(
+      children: [
+        _calendar(appointments),
+        if (isLoading)
+          const Align(
+            alignment: Alignment.bottomCenter,
+            child: LinearProgressIndicator(),
+          )
+      ],
     );
   }
 

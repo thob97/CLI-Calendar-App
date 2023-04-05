@@ -18,9 +18,10 @@ class DatabaseProxy extends DatabaseStrategy {
   Config? cachedConfig;
 
   ///-----proxy functions-----
-  void _clearProxyData() {
+  void clearProxyData() {
     cachedTodos = [];
     cachedCalendarFile = null;
+    cachedConfig = null;
   }
 
   //
@@ -31,7 +32,7 @@ class DatabaseProxy extends DatabaseStrategy {
   @override
   Future<bool> autoSetup() {
     ///proxy
-    _clearProxyData();
+    clearProxyData();
     return database.autoSetup();
   }
 
@@ -57,21 +58,21 @@ class DatabaseProxy extends DatabaseStrategy {
   @override
   Future<bool> login(String token) {
     ///proxy data should reload on new login -> clearCache
-    _clearProxyData();
+    clearProxyData();
     return database.login(token);
   }
 
   @override
   Future<bool> setConfig({required String dbConfigPath}) {
     ///proxy data should reload on new config -> clearCache
-    _clearProxyData();
+    clearProxyData();
     return database.setConfig(dbConfigPath: dbConfigPath);
   }
 
   @override
   Future<bool> setRepo({required String repoName}) {
     ///proxy data should reload on new config -> clearCache
-    _clearProxyData();
+    clearProxyData();
     return database.setRepo(repoName: repoName);
   }
 

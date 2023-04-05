@@ -43,7 +43,9 @@ import 'package:intl/intl.dart';
 ///Code
 //todo
 class WhenParser implements ParserStrategyPattern {
-  List<WhenAppointment> parseWhenFile(File file) {
+  //used for testing only
+  @visibleForTesting
+  List<WhenAppointment> testingParseWhenFile(File file) {
     final List<WhenAppointment> result = [];
 
     ///for every line in file
@@ -73,7 +75,7 @@ class WhenParser implements ParserStrategyPattern {
     }
     //if line containsAppointment
     else {
-      ///split WhenLine
+      ///split WhenLine (parse Description)
       List<String> sections;
       try {
         sections = splitWhenLine(line);
@@ -132,12 +134,23 @@ class WhenParser implements ParserStrategyPattern {
     DateTime from,
     DateTime until,
   ) {
-    final List<WhenAppointment> whenAppointments = parseWhenFile(file);
     List<CalendarAppointment> result = [];
-    for (final WhenAppointment whenAppointment in whenAppointments) {
-      result = result
-          .followedBy(whenAppointment.getNextCalendarAppointments(from, until))
-          .toList();
+
+    ///for every line in file
+    final List<String> lines = file.readAsLinesSync();
+    for (final String line in lines) {
+      //while line isNotEOL
+      ///parse whenLine
+      final WhenAppointment? whenAppointment = parseWhenLine(line);
+
+      ///if contains appointment
+      if (whenAppointment != null) {
+        ///parse whenAppointment to CalendarAppointments
+        result = result
+            .followedBy(
+                whenAppointment.getNextCalendarAppointments(from, until))
+            .toList();
+      }
     }
     return result;
   }
@@ -264,7 +277,7 @@ int? nextIsVariableValueEquation(String text) {
 bool isOperator(String char) {
   //()|()|()| : match exactly one of ()
   //^(...)$ : from start to end of string -> match only character
-  return RegExp(r'^((<=)|(!=)|(>=)|(=)|\||(%)|\&|>|<|!|-)$').hasMatch(char);
+  return RegExp(r'^((<=)|(!=)|(>=)|(=)|\||(%)|&|>|<|!|-)$').hasMatch(char);
 }
 
 ///-

@@ -19,16 +19,46 @@ class _SettingsPageState extends State<SettingsPage> {
   late final PersistentStorage storage;
   late final DatabaseProxy database;
 
+  ///notifiers
+  //notify appbars (disable back & autoSetup buttons)
+  final ValueNotifier<bool> isLoadingNotifier = ValueNotifier(false);
+
+  //notify appbars (autoSetup buttons)
+  final ValueNotifier<bool> isLoggedInNotifier = ValueNotifier(false);
+
   @override
   void initState() {
     //get database & storage
     database = Provider.of<DatabaseProxy>(context, listen: false);
     storage = Provider.of<PersistentStorage>(context, listen: false);
+    isLoggedInNotifier.value = storage.getLoginState() ?? false;
     super.initState();
   }
 
+  ///-----PAGE-----
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: SettingsAppBar(disabledWhileLoading: isLoadingNotifier),
+      bottomNavigationBar: SettingsNavBar(
+        onPressed: () {},
+        disabledWhileNotLoggedIn: isLoggedInNotifier,
+      ),
+      body: RefreshIndicator(
+        //todo add refresh
+        onRefresh: () => Future(() => null),
+        child: ListView(
+          children: [
+            _textFields(),
+            _userInfo(),
+          ],
+        ),
+      ),
+    );
+  }
+
   ///-----FUNCTIONS-----
-  //todo use proxy? or reload on each page visit! remove proxy from storage
+
   Future<bool> login(String login) async {
     await storage.saveToken(login);
     final bool success = await database.login(login);
@@ -50,68 +80,111 @@ class _SettingsPageState extends State<SettingsPage> {
     return success;
   }
 
-  ///-----PAGE-----
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: SettingsAppBar(isDisabled: notifyAppbarWhenLoading),
-      bottomNavigationBar:
-      SettingsNavBar(onPressed: () {}, isLoggedIn: isLoggedIn),
-      body: RefreshIndicator(
-        //todo add refresh
-        onRefresh: () => Future(() => null),
-        child: ListView(
-          children: [
-            loginTextField(),
-            repoTextField(),
-            configTextField(),
-            userInfo(),
-          ],
-        ),
-      ),
+  ///-----WIDGETS-----
+  Widget _textFields() {
+    return TextFields(
+      isLoggedInNotifier: isLoggedInNotifier,
+      initialLoginText: storage.getToken(),
+      initialRepoText: storage.getRepoPath(),
+      initialConfigText: storage.getConfigPath(),
+      isLoadingNotifier: isLoadingNotifier,
+      initialLoginState: storage.getLoginState(),
+      initialRepoState: storage.getRepoState(),
+      initialConfigState: storage.getConfigState(),
+      loginFutureValidation: login,
+      repoFutureValidation: setRepo,
+      configFutureValidation: setConfig,
     );
   }
 
-  ///-----WIDGETS-----
+  Widget _userInfo() {
+    return ValueListenableBuilder(
+      valueListenable: isLoggedInNotifier,
+      builder: (_, bool notifierValue, ___) {
+        return UserInfo(
+          userName: notifierValue ? database.getUsername() : null,
+          apiCallsLeft: notifierValue ? database.getRemainingRateLimit() : null,
+          resetTime: notifierValue ? database.getResetOfRateLimit() : null,
+        );
+      },
+    );
+  }
+}
+
+//
+//
+//
+//
+//
+///-----Textfields-----
+class TextFields extends StatelessWidget {
+  TextFields({
+    super.key,
+    required this.isLoggedInNotifier,
+    required this.initialLoginText,
+    required this.initialRepoText,
+    required this.initialConfigText,
+    required this.isLoadingNotifier,
+    required this.initialLoginState,
+    required this.initialRepoState,
+    required this.initialConfigState,
+    required this.loginFutureValidation,
+    required this.repoFutureValidation,
+    required this.configFutureValidation,
+  });
+
+  final ValueNotifier<bool> isLoggedInNotifier;
+  final ValueNotifier<bool> isLoadingNotifier;
+  final String? initialLoginText;
+  final String? initialRepoText;
+  final String? initialConfigText;
+  final bool? initialLoginState;
+  final bool? initialRepoState;
+  final bool? initialConfigState;
+  final Future<bool> Function(String) loginFutureValidation;
+  final Future<bool> Function(String) repoFutureValidation;
+  final Future<bool> Function(String) configFutureValidation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        loginTextField(),
+        repoTextField(),
+        configTextField(),
+      ],
+    );
+  }
+
   //
-  final ValueNotifier<bool> notifyAppbarWhenLoading = ValueNotifier(true);
 
-  //key for getting the input of the text-field
-  //notifier to notify the other text-field listeners
-  final loginFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
 
-  final ValueNotifier<bool> isLoggedIn = ValueNotifier(false);
-
-  //todo refactor 3x textfields into one easie to understand widget with setstate
   Widget loginTextField() {
     //set initial success state (when opening settings will display init value)
-    isLoggedIn.value = storage.getLoginState() ?? false;
     return CustomFutureTextFormField(
       formKey: loginFormKey,
       validationErrorText: 'errorText',
       hintText: 'hintText',
       labelText: 'labelText',
       prefixIcon: Icons.person,
-      initialText: storage.getToken(),
-      getFutureValidation: login,
+      initialText: initialLoginText,
+      getFutureValidation: loginFutureValidation,
       enabled: true,
-      notifyNextTextField: (success) => isLoggedIn.value = success,
-      initialState: isLoggedIn.value,
-      notifyWhenLoading: (isLoading) =>
-      notifyAppbarWhenLoading.value = isLoading,
+      notifyNextTextField: (success) => isLoggedInNotifier.value = success,
+      initialState: isLoggedInNotifier.value,
+      notifyWhenLoading: (isLoading) => isLoadingNotifier.value = isLoading,
     );
   }
 
-  //key for getting the input of the text-field
-  final repoFormKey = GlobalKey<FormState>();
-
+  final GlobalKey<FormState> repoFormKey = GlobalKey<FormState>();
   final ValueNotifier<bool> repoPathIsValid = ValueNotifier(false);
 
   Widget repoTextField() {
     //set initial success state (when opening settings will display init value)
-    repoPathIsValid.value = storage.getRepoState() ?? false;
+    repoPathIsValid.value = initialRepoState ?? false;
     return ValueListenableBuilder(
-      valueListenable: isLoggedIn,
+      valueListenable: isLoggedInNotifier,
       builder: (_, bool notifierValue, ___) {
         return CustomFutureTextFormField(
           formKey: repoFormKey,
@@ -119,20 +192,18 @@ class _SettingsPageState extends State<SettingsPage> {
           hintText: 'hintText',
           labelText: 'labelText',
           prefixIcon: Icons.home,
-          initialText: storage.getRepoPath(),
-          getFutureValidation: setRepo,
+          initialText: initialRepoText,
+          getFutureValidation: repoFutureValidation,
           notifyNextTextField: (success) => repoPathIsValid.value = success,
           initialState: repoPathIsValid.value,
           enabled: notifierValue,
-          notifyWhenLoading: (isLoading) =>
-          notifyAppbarWhenLoading.value = isLoading,
+          notifyWhenLoading: (isLoading) => isLoadingNotifier.value = isLoading,
         );
       },
     );
   }
 
-  //key for getting the input of the text-field
-  final configFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> configFormKey = GlobalKey<FormState>();
 
   Widget configTextField() {
     return ValueListenableBuilder(
@@ -144,26 +215,12 @@ class _SettingsPageState extends State<SettingsPage> {
           hintText: 'hintText',
           labelText: 'labelText',
           prefixIcon: Icons.settings,
-          initialText: storage.getConfigPath(),
-          getFutureValidation: setConfig,
+          initialText: initialConfigText,
+          getFutureValidation: configFutureValidation,
           notifyNextTextField: (_) {},
-          initialState: storage.getConfigState() ?? false,
+          initialState: initialConfigState ?? false,
           enabled: notifierValue,
-          notifyWhenLoading: (isLoading) =>
-          notifyAppbarWhenLoading.value = isLoading,
-        );
-      },
-    );
-  }
-
-  Widget userInfo() {
-    return ValueListenableBuilder(
-      valueListenable: isLoggedIn,
-      builder: (_, bool notifierValue, ___) {
-        return UserInfo(
-          userName: notifierValue ? database.getUsername() : null,
-          apiCallsLeft: notifierValue ? database.getRemainingRateLimit() : null,
-          resetTime: notifierValue ? database.getResetOfRateLimit() : null,
+          notifyWhenLoading: (isLoading) => isLoadingNotifier.value = isLoading,
         );
       },
     );
@@ -324,9 +381,9 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
   //+isLoading
   bool isRetry() =>
       !isDisabled() &&
-          prevStateWasDisabled &&
-          userInput != null &&
-          !isFirstBuild;
+      prevStateWasDisabled &&
+      userInput != null &&
+      !isFirstBuild;
 
   bool isDisabled() => !widget.enabled;
 
@@ -334,7 +391,7 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
 
   bool isSuccess({required bool? validated}) =>
       validated != null && validated && !isDisabled() ||
-          (isFirstBuild && widget.initialState);
+      (isFirstBuild && widget.initialState);
 
   bool isError({required bool? validated}) =>
       validated != null && !validated && !isDisabled();
@@ -458,17 +515,17 @@ class UserInfo extends StatelessWidget {
 class SettingsAppBar extends StatelessWidget implements PreferredSizeWidget {
   const SettingsAppBar({
     super.key,
-    required this.isDisabled,
+    required this.disabledWhileLoading,
   });
 
   //set value notifier to notify appBar
   //disable backbutton while loading
-  final ValueNotifier<bool> isDisabled;
+  final ValueNotifier<bool> disabledWhileLoading;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: isDisabled,
+      valueListenable: disabledWhileLoading,
       builder: (_, bool isDisabled, ___) {
         return MyAppBar(
           title: 'Settings',
@@ -505,15 +562,18 @@ class SettingsAppBar extends StatelessWidget implements PreferredSizeWidget {
 //
 ///-----NavBar-----
 class SettingsNavBar extends StatelessWidget {
-  const SettingsNavBar({super.key, required this.onPressed, required this.isLoggedIn});
+  const SettingsNavBar(
+      {super.key,
+      required this.onPressed,
+      required this.disabledWhileNotLoggedIn});
 
   final VoidCallback onPressed;
-  final ValueNotifier<bool> isLoggedIn;
+  final ValueNotifier<bool> disabledWhileNotLoggedIn;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: isLoggedIn,
+      valueListenable: disabledWhileNotLoggedIn,
       builder: (_, bool isLoggedIn, ___) {
         return MyBottomNavBar(
           mainButton: AutoSetupButton(

@@ -52,7 +52,7 @@ class DatabaseProxy extends DatabaseStrategy {
   @override
   Future<List<Todo>?> getNumOpenIssues(int num) async {
     ///proxy todos
-    return cachedTodos = await database.getNumOpenIssues(num) ?? [];
+    return cachedTodos ??= await database.getNumOpenIssues(num);
   }
 
   @override

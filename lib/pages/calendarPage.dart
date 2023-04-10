@@ -97,8 +97,6 @@ class _CalendarPageState extends State<CalendarPage> {
           CalendarNavBar(newTodoButtonDisabled: !database.isInitialized()),
       body: ConstrainediOSRefresh(
         onRefresh: onRefresh,
-        //ignore alignment
-        columnAlignment: MainAxisAlignment.spaceEvenly,
         child: _buildFuture(),
       ),
     );

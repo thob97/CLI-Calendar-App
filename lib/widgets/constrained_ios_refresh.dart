@@ -5,12 +5,10 @@ class ConstrainediOSRefresh extends StatelessWidget {
     super.key,
     required this.child,
     required this.onRefresh,
-    required this.columnAlignment,
   });
 
   final Widget child;
   final Future<void> Function() onRefresh;
-  final MainAxisAlignment columnAlignment;
 
   @override
   Widget build(BuildContext context) {

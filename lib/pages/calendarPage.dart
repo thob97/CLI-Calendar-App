@@ -118,7 +118,7 @@ class _CalendarPageState extends State<CalendarPage> {
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.waiting:
-            return _loadingCalendar([], true);
+            return _loadingCalendar([]);
           default:
             return snapshot.hasError
                 ? const Center(child: Text('Something went wrong'))
@@ -128,16 +128,14 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  Widget _loadingCalendar(
-      List<CalendarAppointment>? appointments, bool isLoading) {
+  Widget _loadingCalendar(List<CalendarAppointment>? appointments) {
     return Stack(
       children: [
         _calendar(appointments),
-        if (isLoading)
-          const Align(
-            alignment: Alignment.bottomCenter,
-            child: LinearProgressIndicator(),
-          )
+        const Align(
+          alignment: Alignment.bottomCenter,
+          child: LinearProgressIndicator(),
+        )
       ],
     );
   }
@@ -235,14 +233,14 @@ class CalendarNavBar extends StatelessWidget {
     return MyBottomNavBar(
       mainButton: NewTodoButton(
           isDisabled: newTodoButtonDisabled,
-          onPressed: () => _onPressed(context)),
+          onPressed: () => Future(() => _onPressed(context))),
       subButton: const ShowTodosButton(),
     );
   }
 
   //open todoListPage page
   void _onPressed(BuildContext context) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation1, animation2) =>

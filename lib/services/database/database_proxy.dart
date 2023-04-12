@@ -13,13 +13,13 @@ class DatabaseProxy extends DatabaseStrategy {
   //
   //
   //
-  List<Todo>? cachedTodos = [];
+  List<Todo>? cachedTodos;
   File? cachedCalendarFile;
   Config? cachedConfig;
 
   ///-----proxy functions-----
   void clearProxyData() {
-    cachedTodos = [];
+    cachedTodos = null;
     cachedCalendarFile = null;
     cachedConfig = null;
   }
@@ -52,7 +52,9 @@ class DatabaseProxy extends DatabaseStrategy {
   @override
   Future<List<Todo>?> getNumOpenIssues(int num) async {
     ///proxy todos
-    return cachedTodos ??= await database.getNumOpenIssues(num);
+    cachedTodos ??= await database.getNumOpenIssues(num);
+    //copy of list, else will add and remove twice in TodoPage
+    return [...cachedTodos!];
   }
 
   @override
@@ -91,17 +93,41 @@ class DatabaseProxy extends DatabaseStrategy {
 
   @override
   Future<int?> uploadIssue({required Todo todo, required Config config}) async {
+    //remember issueNum here, as database might change it, as object is not really copied
+    final int? prevIssueNum = todo.issueNumber;
+
     ///issues should only be able to be added when it got fetched once
     assert(cachedTodos != null);
-    final int? id = await database.uploadIssue(todo: todo, config: config);
+    final int? issueNumber =
+        await database.uploadIssue(todo: todo, config: config);
 
-    ///add issue to proxy
-    if (id != null) {
-      todo.issueNumber = id;
-      cachedTodos!.add(todo);
-      return id;
+    ///on error
+    if (issueNumber == null) {
+      return null;
     }
-    return null;
+
+    ///if edit issue issue
+    else if (prevIssueNum == issueNumber) {
+      print(issueNumber);
+
+      ///edit proxy issue
+      final Todo editTodo = cachedTodos!
+          .firstWhere((element) => element.issueNumber == todo.issueNumber);
+      editTodo.title = todo.title;
+      editTodo.body = todo.body;
+      editTodo.files = todo.files;
+      return editTodo.issueNumber;
+    }
+
+    ///if new issue
+    else {
+      print('add');
+
+      ///add issue to proxy
+      todo.issueNumber = issueNumber;
+      cachedTodos!.add(todo);
+      return issueNumber;
+    }
   }
 
   //

@@ -1,6 +1,6 @@
 import 'package:cli_calendar_app/pages/calendarPage.dart';
 import 'package:cli_calendar_app/services/database/database_proxy.dart';
-import 'package:cli_calendar_app/services/database/mocked_database.dart';
+import 'package:cli_calendar_app/services/database/github_connection.dart';
 import 'package:cli_calendar_app/services/notification/notification_service.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,7 +28,7 @@ Future<void> main() async {
   final String? configPath = storage.getConfigPath();
 
   ///init database
-  final DatabaseProxy database = DatabaseProxy(database: MockedDatabase());
+  final DatabaseProxy database = DatabaseProxy(database: GitHubConnection());
   if (token != null && repoPath != null && configPath != null) {
     await database.init(
       token: token,

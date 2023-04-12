@@ -137,9 +137,9 @@ void main() {
         final bool loginId = await tempDb.login(tokenNoneScopes);
         expect(
           loginId,
-          true,
+          false,
           reason:
-              'database should connect, as token is valid (only scopes are insufficient)',
+              'database should fail, as token is valid but scopes are insufficient',
         );
         expect(
           await tempDb.tokenScopeIsValid(),
@@ -166,9 +166,9 @@ void main() {
         final bool loginId = await tempDb.login(tokenOnlyOneScope);
         expect(
           loginId,
-          true,
+          false,
           reason:
-              'database should connect, as token is valid (only scopes are insufficient)',
+              'database should fail, as token is valid but scopes are insufficient',
         );
         expect(
           await tempDb.tokenScopeIsValid(),

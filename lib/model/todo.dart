@@ -53,7 +53,7 @@ class TodoFile {
           _type = FileType.picture;
           return _type!;
         case 'mp4':
-          _type = FileType.video;
+          _type = FileType.videoOrAudio;
           return _type!;
         default:
           _type = FileType.other;
@@ -65,6 +65,6 @@ class TodoFile {
 
 enum FileType {
   picture,
-  video,
+  videoOrAudio,
   other,
 }

@@ -605,7 +605,7 @@ class SettingsNavBar extends StatelessWidget {
     required this.disableWhileLoggedOut,
   });
 
-  final VoidCallback onPressed;
+  final Future<void> Function() onPressed;
   final ValueNotifier<bool> disableWhileLoggedOut;
 
   @override

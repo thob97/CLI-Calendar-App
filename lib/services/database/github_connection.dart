@@ -93,9 +93,9 @@ class GitHubConnection implements DatabaseStrategy {
   }
 
   //purpose: const values for autoSetup
+  //assert: only get after autoSetup method was run
   @override
-  String get autoSetupRepoName =>
-      'Calendar-${DateFormat.yMd().add_Hms().format(DateTime.now()).replaceAll(RegExp(r'\D'), '-')}';
+  late String autoSetupRepoName;
 
   @override
   String get autoSetupConfigPath => 'config.json';
@@ -110,6 +110,8 @@ class GitHubConnection implements DatabaseStrategy {
 
     ///const variables
     //repo
+    autoSetupRepoName =
+        'Calendar-${DateFormat.yMd().add_Hms().format(DateTime.now()).replaceAll(RegExp(r'\D'), '-')}';
     final String repoName = autoSetupRepoName;
     const String repoDesc =
         'The repository to sync your cli calendar file with your phone';
@@ -184,7 +186,7 @@ class GitHubConnection implements DatabaseStrategy {
   //def: tries to login -> updates gitHub and userName accordingly
   //assert: -
   //purpose: used in init() + to change the login
-  //return: true if token is valid - false on failure
+  //return: true if token is valid & scope is sufficient - false on failure
   @override
   Future<bool> login(String token) async {
     ///authenticate
@@ -206,7 +208,7 @@ class GitHubConnection implements DatabaseStrategy {
     //update github and userName on success
     gitHub = testGitHubConnection;
     _userName = loginId;
-    return true;
+    return tokenScopeIsValid();
   }
 
   //todo: assert & check: only allow special chars '-' and '_' as github doesent accept others

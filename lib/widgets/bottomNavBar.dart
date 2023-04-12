@@ -34,24 +34,27 @@ class MyBottomNavBar extends StatelessWidget {
 //
 ///-----Buttons-----
 class AutoSetupButton extends StatelessWidget {
-  const AutoSetupButton(
+  AutoSetupButton(
       {super.key, required this.isDisabled, required this.onPressed});
 
   final bool isDisabled;
-  final VoidCallback onPressed;
+  final Future<void> Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
     return MainButton(
       text: 'Auto Setup',
-      onPressed: () => _showAlert(context),
+      onPressed: () => _onPressed(context),
       icon: CupertinoIcons.refresh,
       isDisabled: isDisabled,
     );
   }
 
-  void _showAlert(BuildContext context) {
-    showDialog(
+  //accept so that _onPressed method can wait for database result / load
+  bool accept = false;
+
+  Future<void> _showAlert(BuildContext context) async {
+    await showDialog(
       context: context,
       barrierDismissible: true,
       builder: (_) {
@@ -63,6 +66,7 @@ class AutoSetupButton extends StatelessWidget {
             CupertinoDialogAction(
               onPressed: () {
                 Navigator.of(context).pop();
+                accept = false;
               },
               child: const Text('Abort'),
             ),
@@ -71,7 +75,7 @@ class AutoSetupButton extends StatelessWidget {
               isDestructiveAction: true,
               onPressed: () {
                 Navigator.of(context).pop();
-                onPressed();
+                accept = true;
               },
               child: const Text('Continue'),
             ),
@@ -80,6 +84,13 @@ class AutoSetupButton extends StatelessWidget {
       },
     );
   }
+
+  Future<void> _onPressed(BuildContext context) async {
+    await _showAlert(context);
+    if (accept) {
+      await onPressed();
+    }
+  }
 }
 
 class NewTodoButton extends StatelessWidget {
@@ -87,7 +98,7 @@ class NewTodoButton extends StatelessWidget {
       {super.key, required this.isDisabled, required this.onPressed});
 
   final bool isDisabled;
-  final VoidCallback onPressed;
+  final Future<void> Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +111,7 @@ class NewTodoButton extends StatelessWidget {
   }
 }
 
-class MainButton extends StatelessWidget {
+class MainButton extends StatefulWidget {
   const MainButton({
     super.key,
     required this.text,
@@ -111,21 +122,35 @@ class MainButton extends StatelessWidget {
 
   final String text;
   final IconData icon;
-  final VoidCallback onPressed;
+  final Future<void> Function() onPressed;
   final bool isDisabled;
 
   @override
+  State<MainButton> createState() => _MainButtonState();
+}
+
+class _MainButtonState extends State<MainButton> {
+  @override
   Widget build(BuildContext context) {
     return Opacity(
-      opacity: isDisabled ? 0.5 : 1,
+      opacity: widget.isDisabled ? 0.5 : 1,
       child: CupertinoButton(
-        onPressed: isDisabled ? null : onPressed,
+        onPressed: widget.isDisabled ? null : _onPressed,
         child: Row(
           children: [
-            Icon(icon),
+            //both should have same size so that transition looks better when they change
+            if (isLoading)
+              const CupertinoActivityIndicator(
+                radius: 12,
+              )
+            else
+              Icon(
+                widget.icon,
+                size: 24,
+              ),
             const SizedBox(width: 5),
             Text(
-              text,
+              widget.text,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 //fontSize: 20,
@@ -135,6 +160,19 @@ class MainButton extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  //change button icon to progressIndicator while loading
+  bool isLoading = false;
+
+  Future<void> _onPressed() async {
+    setState(() {
+      isLoading = true;
+    });
+    await widget.onPressed();
+    setState(() {
+      isLoading = false;
+    });
   }
 }
 
@@ -148,7 +186,7 @@ class ShowTodosButton extends StatelessWidget {
 
   //open todoListPage page
   void _onPressed(BuildContext context) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation1, animation2) =>

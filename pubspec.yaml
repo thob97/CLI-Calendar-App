@@ -31,6 +31,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  keyboard_actions: ^4.2.0 #buttons over keyboard
+  video_player: ^2.6.1 #video player
   provider: ^6.0.5 #for singleton connection to database + storage
   timezone: ^0.9.1 #notifications (scheduled)
   flutter_local_notifications: ^13.0.0 #notifications

@@ -39,7 +39,6 @@ import 'package:intl/intl.dart';
 
 //todo: rethink method placement & names & visibility (maybe move some into classes)
 
-
 ///Code
 //todo
 class WhenParser implements ParserStrategyPattern {
@@ -148,7 +147,8 @@ class WhenParser implements ParserStrategyPattern {
         ///parse whenAppointment to CalendarAppointments
         result = result
             .followedBy(
-                whenAppointment.getNextCalendarAppointments(from, until))
+              whenAppointment.getNextCalendarAppointments(from, until),
+            )
             .toList();
       }
     }

@@ -1,18 +1,17 @@
 import 'dart:io';
 
-import 'package:cli_calendar_app/pages/calendarPage.dart';
-import 'package:cli_calendar_app/pages/filePage.dart';
+import 'package:cli_calendar_app/model/todo.dart';
+import 'package:cli_calendar_app/pages/calendar_page.dart';
+import 'package:cli_calendar_app/pages/file_page.dart';
 import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/services/database/model/config.dart';
 import 'package:cli_calendar_app/widgets/appbar.dart';
-import 'package:cli_calendar_app/widgets/bottomNavBar.dart';
+import 'package:cli_calendar_app/widgets/bottom_nav_bar.dart';
 import 'package:cli_calendar_app/widgets/ios_refresh.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-
-import '../model/todo.dart';
 
 class TodoListPage extends StatefulWidget {
   const TodoListPage({super.key, required this.isCreatingNewTodo});
@@ -85,11 +84,12 @@ class _TodoListPageState extends State<TodoListPage> {
               return const Center(child: Text('Something went wrong'));
             } else {
               if (snapshot.data == null) {
-                return Center(
-                    child: Text('Once logged in you can add todos here'));
+                return const Center(
+                  child: Text('Once logged in you can add todos here'),
+                );
               } else {
                 todos = snapshot.data;
-                return iOSRefresh(
+                return IOSRefresh(
                   onRefresh: onRefresh,
                   child: TodoList(
                     animatedListKey: animatedListKey,
@@ -209,12 +209,13 @@ class _TodoListPageState extends State<TodoListPage> {
 //
 ///-----TodoList-----
 class TodoList extends StatelessWidget {
-  const TodoList(
-      {super.key,
-      required this.todoList,
-      required this.onSolve,
-      this.animatedListKey,
-      required this.onSubmit});
+  const TodoList({
+    super.key,
+    required this.todoList,
+    required this.onSolve,
+    this.animatedListKey,
+    required this.onSubmit,
+  });
 
   final List<Todo> todoList;
   final GlobalKey? animatedListKey;
@@ -345,13 +346,14 @@ class TodoItem extends StatelessWidget {
 //
 ///-----TextFields-----
 class TodoTextFields extends StatefulWidget {
-  const TodoTextFields(
-      {super.key,
-      required this.titleController,
-      required this.initialTitleValue,
-      required this.descController,
-      required this.initialDescValue,
-      required this.onSubmit});
+  const TodoTextFields({
+    super.key,
+    required this.titleController,
+    required this.initialTitleValue,
+    required this.descController,
+    required this.initialDescValue,
+    required this.onSubmit,
+  });
 
   final TextEditingController titleController;
   final TextEditingController descController;
@@ -444,10 +446,11 @@ class _TodoTextFieldsState extends State<TodoTextFields> {
         height: 1.2,
       ),
       decoration: InputDecoration(
-          border: InputBorder.none,
-          isDense: true,
-          counterText: focused ? null : '',
-          hintText: 'Description'),
+        border: InputBorder.none,
+        isDense: true,
+        counterText: focused ? null : '',
+        hintText: 'Description',
+      ),
     );
   }
 
@@ -475,7 +478,7 @@ class DataGridview extends StatelessWidget {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         mainAxisExtent: 80,
-        childAspectRatio: 1,
+        //childAspectRatio: 1,
       ),
       //todo add to config
       itemCount: todoFiles.length,
@@ -571,8 +574,11 @@ class _MiniVideoPlayerState extends State<MiniVideoPlayer> {
       alignment: Alignment.center,
       children: [
         VideoPlayer(_controller),
-        const Icon(CupertinoIcons.play_circle_fill,
-            size: 30, color: CupertinoColors.secondaryLabel)
+        const Icon(
+          CupertinoIcons.play_circle_fill,
+          size: 30,
+          color: CupertinoColors.secondaryLabel,
+        )
       ],
     );
   }
@@ -657,10 +663,11 @@ class TodoListAppBar extends StatelessWidget implements PreferredSizeWidget {
 //
 ///-----NavBar-----
 class TodoListNavBar extends StatelessWidget {
-  const TodoListNavBar(
-      {super.key,
-      required this.onPressed,
-      required this.newTodoButtonDisabled});
+  const TodoListNavBar({
+    super.key,
+    required this.onPressed,
+    required this.newTodoButtonDisabled,
+  });
 
   final Future<void> Function() onPressed;
   final bool newTodoButtonDisabled;

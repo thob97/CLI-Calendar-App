@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
-class iOSRefresh extends StatelessWidget {
-  const iOSRefresh({
+class IOSRefresh extends StatelessWidget {
+  const IOSRefresh({
     super.key,
     required this.child,
     required this.onRefresh,

@@ -73,7 +73,7 @@ class MockedDatabase implements DatabaseStrategy {
     if (onError) {
       return false;
     }
-    onError = !(await setConfig(dbConfigPath: dbConfigPath) == null);
+    onError = !(await setConfig(dbConfigPath: dbConfigPath));
     if (onError) {
       return false;
     }
@@ -115,12 +115,14 @@ class MockedDatabase implements DatabaseStrategy {
     if (_issues == null) {
       final List<TodoFile> issueFiles = [
         TodoFile(
-            content: await _getFileFromAssets('assets/autoSetup/audio.mp3')),
+          content: await _getFileFromAssets('assets/autoSetup/audio.mp3'),
+        ),
         TodoFile(
           content: await _getFileFromAssets('assets/autoSetup/picture.jpg'),
         ),
         TodoFile(
-            content: await _getFileFromAssets('assets/autoSetup/video.mp4'))
+          content: await _getFileFromAssets('assets/autoSetup/video.mp4'),
+        )
       ];
       final List<TodoFile> issueFiles2 = [
         TodoFile(
@@ -178,7 +180,7 @@ class MockedDatabase implements DatabaseStrategy {
       editTodo.body = todo.body;
       editTodo.files = todo.files;
     }
-    print('upload ${todo.issueNumber}');
+
     return Future.delayed(const Duration(seconds: 1))
         .then((_) => todo.issueNumber);
   }
@@ -188,7 +190,8 @@ class MockedDatabase implements DatabaseStrategy {
     assert(isInitialized());
     assert(_configPath != null);
     return Future.delayed(const Duration(seconds: 1)).then(
-        (_) => Config.defaultSettings(calendarFilePath: 'calendarFilePath'));
+      (_) => Config.defaultSettings(calendarFilePath: 'calendarFilePath'),
+    );
   }
 
   ///-----OTHER-----

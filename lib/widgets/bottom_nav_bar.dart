@@ -1,4 +1,4 @@
-import 'package:cli_calendar_app/pages/todoListPage.dart';
+import 'package:cli_calendar_app/pages/todo_list_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -33,9 +33,13 @@ class MyBottomNavBar extends StatelessWidget {
 //
 //
 ///-----Buttons-----
+// ignore: must_be_immutable
 class AutoSetupButton extends StatelessWidget {
-  AutoSetupButton(
-      {super.key, required this.isDisabled, required this.onPressed});
+  AutoSetupButton({
+    super.key,
+    required this.isDisabled,
+    required this.onPressed,
+  });
 
   final bool isDisabled;
   final Future<void> Function() onPressed;
@@ -61,7 +65,8 @@ class AutoSetupButton extends StatelessWidget {
         return CupertinoAlertDialog(
           title: const Text('Auto Setup'),
           content: const Text(
-              'This will create a new repo with your GitHub account and set the app settings accordingly, are you sure?'),
+            'This will create a new repo with your GitHub account and set the app settings accordingly, are you sure?',
+          ),
           actions: [
             CupertinoDialogAction(
               onPressed: () {
@@ -94,8 +99,11 @@ class AutoSetupButton extends StatelessWidget {
 }
 
 class NewTodoButton extends StatelessWidget {
-  const NewTodoButton(
-      {super.key, required this.isDisabled, required this.onPressed});
+  const NewTodoButton({
+    super.key,
+    required this.isDisabled,
+    required this.onPressed,
+  });
 
   final bool isDisabled;
   final Future<void> Function() onPressed;

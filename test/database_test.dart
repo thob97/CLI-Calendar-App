@@ -714,7 +714,7 @@ void main() {
         repoName: database.repo!.name,
         dbConfigPath: dbConfigPath,
       );
-      expect(db != null, true);
+      expect(db, true);
     });
   });
 

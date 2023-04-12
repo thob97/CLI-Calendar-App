@@ -1,4 +1,4 @@
-import 'package:cli_calendar_app/pages/calendarPage.dart';
+import 'package:cli_calendar_app/pages/calendar_page.dart';
 import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/services/database/github_connection.dart';
 import 'package:cli_calendar_app/services/notification/notification_service.dart';
@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor:
             CupertinoColors.tertiarySystemGroupedBackground,
       ),
-      home: CalendarPage(),
+      home: const CalendarPage(),
     );
   }
 }

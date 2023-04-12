@@ -36,8 +36,11 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 //
 ///-----BUTTONS-----
 class MyBackButton extends StatelessWidget {
-  const MyBackButton(
-      {super.key, required this.onPressed, this.isDisabled = false});
+  const MyBackButton({
+    super.key,
+    required this.onPressed,
+    this.isDisabled = false,
+  });
 
   final VoidCallback onPressed;
   final bool isDisabled;

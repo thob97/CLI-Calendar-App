@@ -122,12 +122,13 @@ class _FullVideoPlayerState extends State<FullVideoPlayer> {
   Widget _playButton() {
     if (!isPlaying) {
       return GestureDetector(
-          onTap: pauseResume,
-          child: const Icon(
-            CupertinoIcons.play_circle_fill,
-            size: 50,
-            color: CupertinoColors.secondaryLabel,
-          ));
+        onTap: pauseResume,
+        child: const Icon(
+          CupertinoIcons.play_circle_fill,
+          size: 50,
+          color: CupertinoColors.secondaryLabel,
+        ),
+      );
     } else {
       return const SizedBox.shrink();
     }
@@ -137,10 +138,11 @@ class _FullVideoPlayerState extends State<FullVideoPlayer> {
     return Stack(
       children: [
         Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: VideoProgressIndicator(_controller, allowScrubbing: true)),
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: VideoProgressIndicator(_controller, allowScrubbing: true),
+        ),
       ],
     );
   }

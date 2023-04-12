@@ -108,8 +108,6 @@ class DatabaseProxy extends DatabaseStrategy {
 
     ///if edit issue issue
     else if (prevIssueNum == issueNumber) {
-      print(issueNumber);
-
       ///edit proxy issue
       final Todo editTodo = cachedTodos!
           .firstWhere((element) => element.issueNumber == todo.issueNumber);
@@ -121,8 +119,6 @@ class DatabaseProxy extends DatabaseStrategy {
 
     ///if new issue
     else {
-      print('add');
-
       ///add issue to proxy
       todo.issueNumber = issueNumber;
       cachedTodos!.add(todo);

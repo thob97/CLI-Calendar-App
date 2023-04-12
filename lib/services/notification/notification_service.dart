@@ -4,14 +4,14 @@ import 'package:timezone/timezone.dart' as tz;
 class NotificationService {
   ///-----PLUGIN-----
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   ///init
   Future<void> initNotification() async {
     ///android settings
     //get logo from: app/src/main/res/drawable
     const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('notification_logo.jpg');
+        AndroidInitializationSettings('notification_logo.jpg');
 
     ///ios settings
     const initializationSettingsIOS = DarwinInitializationSettings(
@@ -63,7 +63,11 @@ class NotificationService {
     String? body,
   }) async {
     return _notificationsPlugin.show(
-        id, title, body, _getNotificationDetails());
+      id,
+      title,
+      body,
+      _getNotificationDetails(),
+    );
   }
 
   Future scheduleNotification({
@@ -84,7 +88,7 @@ class NotificationService {
       _getNotificationDetails(),
       androidAllowWhileIdle: true,
       uiLocalNotificationDateInterpretation:
-      UILocalNotificationDateInterpretation.absoluteTime,
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 }

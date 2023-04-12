@@ -1,8 +1,8 @@
-import 'package:cli_calendar_app/pages/calendarPage.dart';
+import 'package:cli_calendar_app/pages/calendar_page.dart';
 import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/services/persistent_storage.dart';
 import 'package:cli_calendar_app/widgets/appbar.dart';
-import 'package:cli_calendar_app/widgets/bottomNavBar.dart';
+import 'package:cli_calendar_app/widgets/bottom_nav_bar.dart';
 import 'package:cli_calendar_app/widgets/constrained_ios_refresh_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -151,7 +151,8 @@ class _SettingsPageState extends State<SettingsPage> {
 //
 //
 ///-----TextFields-----
-class TextFields extends StatelessWidget {
+class TextFields extends StatefulWidget {
+  // ignore: prefer_const_constructors_in_immutables
   TextFields({
     required this.isLoggedInNotifier,
     required this.isLoadingNotifier,
@@ -184,6 +185,11 @@ class TextFields extends StatelessWidget {
   final Future<bool> Function(String) configFutureValidation;
 
   @override
+  State<TextFields> createState() => _TextFieldsState();
+}
+
+class _TextFieldsState extends State<TextFields> {
+  @override
   Widget build(BuildContext context) {
     return CupertinoListSection.insetGrouped(
       header: const Text('Login'),
@@ -196,47 +202,50 @@ class TextFields extends StatelessWidget {
   }
 
   //
-
   GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
 
   Widget loginTextField() {
     return CustomFutureTextFormField(
-      key: loginWidgetKey,
+      key: widget.loginWidgetKey,
       formKey: loginFormKey,
       validationErrorText: 'Please enter a valid token with sufficient scope',
       hintText: 'Token',
       prefixIcon: CupertinoIcons.lock,
-      getFutureValidation: loginFutureValidation,
+      getFutureValidation: widget.loginFutureValidation,
       enabled: true,
-      notifyNextTextField: (success) => isLoggedInNotifier.value = success,
-      initialState: isLoggedInNotifier.value,
-      notifyWhenLoading: (isLoading) => isLoadingNotifier.value = isLoading,
-      textEditingController: loginController,
+      notifyNextTextField: (success) =>
+          widget.isLoggedInNotifier.value = success,
+      initialState: widget.isLoggedInNotifier.value,
+      notifyWhenLoading: (isLoading) =>
+          widget.isLoadingNotifier.value = isLoading,
+      textEditingController: widget.loginController,
     );
   }
 
   GlobalKey<FormState> repoFormKey = GlobalKey<FormState>();
+
   ValueNotifier<bool> repoPathIsValid = ValueNotifier(false);
 
   Widget repoTextField() {
     //set initial success state (when opening settings will display init value)
-    repoPathIsValid.value = initialRepoState ?? false;
+    repoPathIsValid.value = widget.initialRepoState ?? false;
     return ValueListenableBuilder(
-      valueListenable: isLoggedInNotifier,
+      valueListenable: widget.isLoggedInNotifier,
       builder: (_, bool notifierValue, ___) {
         return CustomFutureTextFormField(
-          key: repoWidgetKey,
+          key: widget.repoWidgetKey,
           formKey: repoFormKey,
           validationErrorText:
               'Please enter a repo that belongs to the account',
           hintText: 'Repository',
           prefixIcon: CupertinoIcons.cloud,
-          getFutureValidation: repoFutureValidation,
+          getFutureValidation: widget.repoFutureValidation,
           notifyNextTextField: (success) => repoPathIsValid.value = success,
           initialState: repoPathIsValid.value,
           enabled: notifierValue,
-          notifyWhenLoading: (isLoading) => isLoadingNotifier.value = isLoading,
-          textEditingController: repoController,
+          notifyWhenLoading: (isLoading) =>
+              widget.isLoadingNotifier.value = isLoading,
+          textEditingController: widget.repoController,
         );
       },
     );
@@ -253,12 +262,13 @@ class TextFields extends StatelessWidget {
           hintText: 'Config file path',
           validationErrorText: 'Please enter the config file path of that repo',
           prefixIcon: CupertinoIcons.settings,
-          getFutureValidation: configFutureValidation,
+          getFutureValidation: widget.configFutureValidation,
           notifyNextTextField: (_) {},
-          initialState: initialConfigState ?? false,
+          initialState: widget.initialConfigState ?? false,
           enabled: notifierValue,
-          notifyWhenLoading: (isLoading) => isLoadingNotifier.value = isLoading,
-          textEditingController: configController,
+          notifyWhenLoading: (isLoading) =>
+              widget.isLoadingNotifier.value = isLoading,
+          textEditingController: widget.configController,
         );
       },
     );
@@ -336,7 +346,7 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
   ///-----WIDGETS-----
 
   Widget customTextField({bool? validation, bool isLoading = false}) {
-    notifyAfterBuildValidation(validation, isLoading);
+    notifyAfterBuildValidation(validation: validation, isLoading: isLoading);
     return Form(
       key: widget.formKey,
       child: TextFormField(
@@ -369,7 +379,10 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
     });
   }
 
-  void notifyAfterBuildValidation(bool? validation, bool isLoading) {
+  void notifyAfterBuildValidation({
+    required bool? validation,
+    required bool isLoading,
+  }) {
     ///at the end of build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ///notify appbar that its loading
@@ -525,8 +538,9 @@ class UserInfo extends StatelessWidget {
         Column(
           children: [
             Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Logged in as: $userName')),
+              alignment: Alignment.centerLeft,
+              child: Text('Logged in as: $userName'),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

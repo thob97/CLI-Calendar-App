@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:cli_calendar_app/model/calendar_appointment.dart';
-import 'package:cli_calendar_app/pages/todoListPage.dart';
+import 'package:cli_calendar_app/pages/todo_list_page.dart';
 import 'package:cli_calendar_app/services/database/database_proxy.dart';
 import 'package:cli_calendar_app/services/database/model/config.dart';
 import 'package:cli_calendar_app/services/notification/calendar_notification.dart';
 import 'package:cli_calendar_app/services/parser/when_parser.dart';
 import 'package:cli_calendar_app/widgets/appbar.dart';
-import 'package:cli_calendar_app/widgets/bottomNavBar.dart';
+import 'package:cli_calendar_app/widgets/bottom_nav_bar.dart';
 import 'package:cli_calendar_app/widgets/constrained_ios_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -122,7 +122,7 @@ class _CalendarPageState extends State<CalendarPage> {
           default:
             return snapshot.hasError
                 ? const Center(child: Text('Something went wrong'))
-                : _calendar(snapshot.data as List<CalendarAppointment>?);
+                : _calendar(snapshot.data);
         }
       },
     );
@@ -232,8 +232,9 @@ class CalendarNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return MyBottomNavBar(
       mainButton: NewTodoButton(
-          isDisabled: newTodoButtonDisabled,
-          onPressed: () => Future(() => _onPressed(context))),
+        isDisabled: newTodoButtonDisabled,
+        onPressed: () => Future(() => _onPressed(context)),
+      ),
       subButton: const ShowTodosButton(),
     );
   }

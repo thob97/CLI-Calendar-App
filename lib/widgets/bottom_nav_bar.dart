@@ -190,7 +190,9 @@ class ShowTodosButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SubButton(
-        text: 'Show reminders', onPressed: () => _onPressed(context));
+      text: 'Show reminders',
+      onPressed: () => _onPressed(context),
+    );
   }
 
   //open todoListPage page

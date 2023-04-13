@@ -85,10 +85,13 @@ class _TodoListPageState extends State<TodoListPage> {
             } else {
               if (snapshot.data == null) {
                 return const Center(
-                  child: Text('Once logged in you can add todos here'),
+                  child: Text(
+                    'Once logged in you can add reminders on this page.',
+                  ),
                 );
               } else {
-                todos = snapshot.data;
+                //on first load, remember data so that reloading animation is smooth
+                todos ??= snapshot.data;
                 return IOSRefresh(
                   onRefresh: onRefresh,
                   child: TodoList(
@@ -198,7 +201,11 @@ class _TodoListPageState extends State<TodoListPage> {
 
   Future<void> onRefresh() async {
     database.clearProxyData();
-    todos = await initIssueList();
+
+    final temp = initIssueList();
+    todos = await temp;
+    //todo does only work if futureTodos is updated, else list wont update? why? updating futureTodos disruptes the animation
+    futureTodos = temp;
     setState(() {});
   }
 }
@@ -634,7 +641,7 @@ class TodoListAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return MyAppBar(
-      title: 'Settings',
+      title: 'Reminders',
       followingButton: const MySettingsButton(),
       leadingButton: MyBackButton(onPressed: () => onBackButton(context)),
     );

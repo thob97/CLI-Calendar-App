@@ -206,6 +206,7 @@ class _TextFieldsState extends State<TextFields> {
 
   Widget loginTextField() {
     return CustomFutureTextFormField(
+      obscureText: true,
       key: widget.loginWidgetKey,
       formKey: loginFormKey,
       validationErrorText: 'Please enter a valid token with sufficient scope',
@@ -217,7 +218,7 @@ class _TextFieldsState extends State<TextFields> {
           widget.isLoggedInNotifier.value = success,
       initialState: widget.isLoggedInNotifier.value,
       notifyWhenLoading: (isLoading) =>
-          widget.isLoadingNotifier.value = isLoading,
+      widget.isLoadingNotifier.value = isLoading,
       textEditingController: widget.loginController,
     );
   }
@@ -236,7 +237,7 @@ class _TextFieldsState extends State<TextFields> {
           key: widget.repoWidgetKey,
           formKey: repoFormKey,
           validationErrorText:
-              'Please enter a repo that belongs to the account',
+              'Please enter a valid repo that belongs to the account',
           hintText: 'Repository',
           prefixIcon: CupertinoIcons.cloud,
           getFutureValidation: widget.repoFutureValidation,
@@ -260,7 +261,8 @@ class _TextFieldsState extends State<TextFields> {
         return CustomFutureTextFormField(
           formKey: configFormKey,
           hintText: 'Config file path',
-          validationErrorText: 'Please enter the config file path of that repo',
+          validationErrorText:
+              'Please enter a valid config file path of that repo',
           prefixIcon: CupertinoIcons.settings,
           getFutureValidation: widget.configFutureValidation,
           notifyNextTextField: (_) {},
@@ -294,8 +296,10 @@ class CustomFutureTextFormField extends StatefulWidget {
     required this.enabled,
     required this.notifyWhenLoading,
     required this.textEditingController,
+    this.obscureText = false,
   });
 
+  final bool obscureText;
   final TextEditingController textEditingController;
   final GlobalKey<FormState> formKey;
   final String validationErrorText;
@@ -350,6 +354,7 @@ class _CustomFutureTextFormFieldState extends State<CustomFutureTextFormField> {
     return Form(
       key: widget.formKey,
       child: TextFormField(
+        obscureText: widget.obscureText,
         controller: widget.textEditingController,
         enabled: !isDisabled() || isLoading,
         textInputAction: TextInputAction.send,
@@ -546,7 +551,7 @@ class UserInfo extends StatelessWidget {
               children: [
                 Text('API calls left: $apiCallsLeft'),
                 Text(
-                  'Next reset at: ${resetTime == null ? '' : DateFormat.Hm().format(resetTime!)}',
+                  'Next reset at: ${resetTime == null ? '' : (DateFormat.Hm().format(resetTime!))}',
                 )
               ],
             ),

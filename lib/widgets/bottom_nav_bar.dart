@@ -65,7 +65,7 @@ class AutoSetupButton extends StatelessWidget {
         return CupertinoAlertDialog(
           title: const Text('Auto Setup'),
           content: const Text(
-            'This will create a new repo with your GitHub account and set the app settings accordingly, are you sure?',
+            'Would you like to create a new repository with your GitHub account and configure the app settings accordingly?',
           ),
           actions: [
             CupertinoDialogAction(
@@ -73,7 +73,7 @@ class AutoSetupButton extends StatelessWidget {
                 Navigator.of(context).pop();
                 accept = false;
               },
-              child: const Text('Abort'),
+              child: const Text('Cancel'),
             ),
             CupertinoDialogAction(
               isDefaultAction: true,
@@ -111,7 +111,7 @@ class NewTodoButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MainButton(
-      text: 'Create a Todo',
+      text: 'Create a reminder',
       icon: CupertinoIcons.add_circled_solid,
       onPressed: onPressed,
       isDisabled: isDisabled,
@@ -189,7 +189,8 @@ class ShowTodosButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SubButton(text: 'Show todos', onPressed: () => _onPressed(context));
+    return SubButton(
+        text: 'Show reminders', onPressed: () => _onPressed(context));
   }
 
   //open todoListPage page

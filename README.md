@@ -5,7 +5,7 @@
     <img src="./_github-example-pictures/example_website.png"  width="30%" height="30%">
 </p>
 
-The project focuses on attempting to develop a suitable app for CLI calendars. CLI calendars are calendars that operate solely through a command-line interface, without a graphical user interface. Therefore, creating an app for CLI calendars requires special consideration. A straightforward porting of such an application to mobile devices would be less practical, as the small display and limited keyboard would make navigation challenging. Hence, I endeavored to develop an appropriate app by leveraging the strengths of both mobile and PC platforms during the development process. If you are interested, you can read my bachelor thesis, available only in German.
+The project focuses on attempting to develop a suitable app for CLI calendars. CLI calendars are calendars that operate solely through a command-line interface, without a graphical user interface. Therefore, creating an app for CLI calendars requires special consideration. A straightforward porting of such an application to mobile devices would be less practical, as the small display and limited keyboard would make navigation challenging. Hence, I endeavored to develop an appropriate app by leveraging the strengths of both mobile and PC platforms during the development process. If you are interested, you can read my [bachelor thesis](https://github.com/thob97/bachelor-thesis_CLI-calendar-app.git), available only in German.
 
 ## Table Of Content
 

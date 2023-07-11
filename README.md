@@ -86,8 +86,9 @@ These tests serve to ensure the functionality and reliability of the respective 
 
 ### Live demo 
 <p float="left">
-    <img src="./_github-example-pictures/preview.gif"  width="20%" height="20%">
+    <img src="./_github-example-pictures/preview.gif"  width="25%" height="25%">
 </p>
+
 ### Example pictures
 <p float="left">
     <img src="./_github-example-pictures/phone1.png"  width="20%" height="20%">

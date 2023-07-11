@@ -1,4 +1,4 @@
-# cli_calendar_app
+# CLI Calendar App
 <p float="left">
     <img src="./_github-example-pictures/example_phone.png"  width="20%" height="20%">
     <img src="./_github-example-pictures/example_cli.png"  width="40%" height="40%">

@@ -15,9 +15,12 @@ The project focuses on attempting to develop a suitable app for CLI calendars. C
 - [Testet with version](#testet-with-version)
 - [Run](#run)
 - [Tests](#tests)
-- [Example pictures](#example-pictures)
-- [Used architecture](#used-architecture)
-- [Used design patterns](#used-design-patterns)
+- [Previews](#previews)
+    - [Live demo](#live-demo)
+    - [Example pictures](#example-pictures)
+- [UML Models](#uml-models)
+    - [Used architecture](#used-architecture)
+    - [Used design patterns](#used-design-patterns)
 
 ## Usage
 The app is ment to be used as follows: 
@@ -79,7 +82,13 @@ Various module regression tests have been implemented for:
  - DatabaseConnection (connecting to GitHub)
 These tests serve to ensure the functionality and reliability of the respective modules. They are particularly helpful if you decide to contribute to or fork this project, as they provide a solid foundation for further development and maintenance.
 
-## Example pictures
+## Previews
+
+### Live demo 
+<p float="left">
+    <img src="./_github-example-pictures/preview.gif"  width="20%" height="20%">
+</p>
+### Example pictures
 <p float="left">
     <img src="./_github-example-pictures/phone1.png"  width="20%" height="20%">
     <img src="./_github-example-pictures/phone2.png"  width="20%" height="20%">
@@ -90,16 +99,16 @@ These tests serve to ensure the functionality and reliability of the respective 
     <img src="./_github-example-pictures/example_website.png"  width="30%" height="30%">
 </p>
 
+## UML Models
 
-
-## Used architecture
+### Used architecture
 ###### (ablagebasiert)
 <p float="left">
     <img src="./_github-example-pictures/Ablage-basiert1.png"  width="70%" height="70%">
     <img src="./_github-example-pictures/Ablage-basiert2.png"  width="70%" height="70%">
 </p>
 
-## Used design patterns
+### Used design patterns
 ###### (singelton, fassade, proxy, 2x strategie)
 <p float="left">
     <img src="./_github-example-pictures/singelton.png"  width="60%" height="60%">

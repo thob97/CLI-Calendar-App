@@ -22,7 +22,6 @@ The project focuses on attempting to develop a suitable app for CLI calendars. C
     - [Used architecture](#used-architecture)
     - [Used design patterns](#used-design-patterns)
 - [Related](#related)
-- [See Also](#see-also)
 
 ## Usage
 The app is ment to be used as follows: 
@@ -123,7 +122,3 @@ These tests serve to ensure the functionality and reliability of the respective 
 
 ## Related
 * [CLI Calendar App](https://github.com/thob97/CLI-Calendar-App.git)
-
-
-## See also
-* [Uni Overview](https://github.com/thob97/uni_overview.git)

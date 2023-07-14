@@ -21,6 +21,8 @@ The project focuses on attempting to develop a suitable app for CLI calendars. C
 - [UML Models](#uml-models)
     - [Used architecture](#used-architecture)
     - [Used design patterns](#used-design-patterns)
+- [Related](#related)
+- [See Also](#see-also)
 
 ## Usage
 The app is ment to be used as follows: 
@@ -118,3 +120,10 @@ These tests serve to ensure the functionality and reliability of the respective 
     <img src="./_github-example-pictures/strategie_database.png"  width="70%" height="70%">
     <img src="./_github-example-pictures/strategie_parser.png"  width="70%" height="70%">
 </p>
+
+## Related
+* [CLI Calendar App](https://github.com/thob97/CLI-Calendar-App.git)
+
+
+## See also
+* [Uni Overview](https://github.com/thob97/uni_overview.git)
